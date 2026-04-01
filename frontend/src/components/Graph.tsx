@@ -198,8 +198,8 @@ export default function Graph({ onSelectRoom }: GraphProps) {
 
             graph.addEdge(edge.source, edge.target, {
               key: `e-${index}`,
-              color: isInter ? '#ffffff04' : '#ffffff09',
-              size: isInter ? 0.2 : 0.4,
+              color: isInter ? '#ffffff02' : '#ffffff04',
+              size: isInter ? 0.1 : 0.2,
               curvature: 0.15 + Math.random() * 0.1,
               type: 'curved',
             });
@@ -214,7 +214,7 @@ export default function Graph({ onSelectRoom }: GraphProps) {
       const sigmaSettings: Record<string, unknown> = {
         renderEdgeLabels: false,
         allowInvalidContainer: true,
-        defaultEdgeColor: '#ffffff05',
+        defaultEdgeColor: '#ffffff03',
         defaultNodeColor: '#ffffff',
         labelColor: { color: '#ffffffbb' },
         labelFont: '"JetBrains Mono", monospace',
