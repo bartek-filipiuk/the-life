@@ -11,7 +11,7 @@
 - [x] **1.2** Create `backend/app/__init__.py` and `backend/app/config.py` — Pydantic Settings loading from `config.yaml` + env vars. **Security: API keys MUST come from env vars only, never from config.yaml. Validate all config values have sane defaults and bounds.**
 - [x] **1.3** Create `backend/config.yaml` with default values (heartbeat_interval, model, budget caps, creativity params, storage paths). **Security: no secrets in this file, add comment warning.**
 - [x] **1.4** Create `backend/.env.example` with all required env vars (OPENROUTER_API_KEY, REPLICATE_API_TOKEN, BRAVE_API_KEY) — placeholder values only.
-- [ ] **1.5** **TEST:** Write `backend/tests/test_config.py` — test config loading, env var override, missing required keys raise error, budget bounds validation.
+- [x] **1.5** **TEST:** Write `backend/tests/test_config.py` — test config loading, env var override, missing required keys raise error, budget bounds validation.
 
 ## Stage 2: Storage Layer
 
