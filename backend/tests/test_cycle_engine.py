@@ -157,10 +157,15 @@ class TestToolFailureGracefulDegradation:
             usage=LLMUsage(total_tokens=100),
         ))
 
-        with patch("app.cycle_engine.web_search.search", new_callable=AsyncMock, side_effect=Exception("API down")):
-            with patch("app.cycle_engine.check_novelty") as mock_novelty:
-                mock_novelty.return_value = MagicMock(is_novel=True)
-                result = await engine.run_cycle()
+        # Mock the search provider to fail
+        from app.tools.search_provider import SearchProviderError
+        mock_search = MagicMock()
+        mock_search.search = AsyncMock(side_effect=SearchProviderError("API down"))
+        engine._search = mock_search
+
+        with patch("app.cycle_engine.check_novelty") as mock_novelty:
+            mock_novelty.return_value = MagicMock(is_novel=True)
+            result = await engine.run_cycle()
 
         # Cycle should still succeed despite search failure
         assert result.success is True

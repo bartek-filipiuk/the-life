@@ -20,6 +20,7 @@ from app.cycle_engine import CycleEngine
 from app.llm_client import LLMClient
 from app.memory.chromadb_store import ChromaDBStore
 from app.storage.sqlite_store import SQLiteStore
+from app.tools.search_factory import create_search_provider
 
 logger = logging.getLogger(__name__)
 
@@ -49,12 +50,18 @@ async def lifespan(app: FastAPI):
             api_key=settings.openrouter_api_key,
             model=settings.model,
         )
+        search = create_search_provider(
+            provider_name=settings.search_provider,
+            api_key=settings.get_search_api_key(),
+        )
+
         engine = CycleEngine(
             settings=settings,
             llm=llm,
             chromadb=chromadb,
             sqlite=sqlite,
             data_dir=data_dir,
+            search=search,
         )
         app.state.cycle_engine = engine
 

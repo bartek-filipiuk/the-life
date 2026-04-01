@@ -56,6 +56,10 @@ class Settings(BaseSettings):
     openrouter_api_key: str = ""
     replicate_api_token: str = ""
     brave_api_key: str = ""
+    tavily_api_key: str = ""
+
+    # Search provider: "brave" or "tavily"
+    search_provider: str = "brave"
 
     # Runtime config
     heartbeat_interval: Annotated[int, Field(ge=60, le=86400)] = 3600
@@ -76,9 +80,18 @@ class Settings(BaseSettings):
             missing.append("THELIFE_OPENROUTER_API_KEY")
         if not self.replicate_api_token:
             missing.append("THELIFE_REPLICATE_API_TOKEN")
-        if not self.brave_api_key:
+        # Check search provider key
+        if self.search_provider == "brave" and not self.brave_api_key:
             missing.append("THELIFE_BRAVE_API_KEY")
+        if self.search_provider == "tavily" and not self.tavily_api_key:
+            missing.append("THELIFE_TAVILY_API_KEY")
         return missing
+
+    def get_search_api_key(self) -> str:
+        """Return the API key for the configured search provider."""
+        if self.search_provider == "tavily":
+            return self.tavily_api_key
+        return self.brave_api_key
 
 
 def load_settings(config_path: Path | None = None) -> Settings:

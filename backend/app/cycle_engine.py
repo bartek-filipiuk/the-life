@@ -27,7 +27,8 @@ from app.prompts.creation import build_creation_prompt
 from app.prompts.decision import TOOL_DEFINITIONS, build_decision_prompt
 from app.prompts.system import get_system_prompt
 from app.storage.sqlite_store import SQLiteStore
-from app.tools import image_gen, music_gen, web_search
+from app.tools import image_gen, music_gen
+from app.tools.search_provider import SearchProvider, SearchQuery, SearchProviderError
 
 logger = logging.getLogger(__name__)
 
@@ -65,12 +66,14 @@ class CycleEngine:
         chromadb: ChromaDBStore,
         sqlite: SQLiteStore,
         data_dir: Path,
+        search: SearchProvider | None = None,
     ) -> None:
         self._settings = settings
         self._llm = llm
         self._chromadb = chromadb
         self._sqlite = sqlite
         self._data_dir = data_dir
+        self._search = search
 
     async def run_cycle(self) -> CycleResult:
         """Execute one full AI cycle."""
@@ -264,18 +267,18 @@ class CycleEngine:
         tasks: list[asyncio.Task] = []
         task_names: list[str] = []
 
-        # Web search
+        # Web search (via modular SearchProvider)
         if "web_search" in tools_to_use:
             queries = decision.get("search_queries", [])
-            if queries and self._settings.brave_api_key:
+            if queries and self._search:
                 async def do_search() -> list[dict[str, Any]]:
                     all_results: list[dict[str, Any]] = []
                     for q in queries[:3]:  # max 3 queries
                         try:
-                            sr = await web_search.search(q, self._settings.brave_api_key)
-                            for r in sr:
+                            sr = await self._search.search(SearchQuery(query=q))
+                            for r in sr.results:
                                 all_results.append({"title": r.title, "url": r.url, "snippet": r.snippet})
-                        except Exception:
+                        except SearchProviderError:
                             logger.exception("Search failed for query: %s", q[:50])
                     return all_results
 
