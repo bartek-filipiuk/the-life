@@ -91,7 +91,7 @@ export interface TagCount {
 }
 
 export interface TimelineDay {
-  day: string;
+  date: string;
   rooms: Room[];
 }
 
@@ -169,8 +169,8 @@ export async function getHealth(): Promise<HealthResponse | null> {
 }
 
 export async function getRooms(page = 1, perPage = 20): Promise<Room[]> {
-  const data = await request<Room[]>(`/rooms?page=${page}&per_page=${perPage}`);
-  return data ?? [];
+  const data = await request<{ rooms: Room[]; total: number }>(`/rooms?page=${page}&per_page=${perPage}`);
+  return data?.rooms ?? [];
 }
 
 export async function getRoom(id: string): Promise<Room | null> {
@@ -186,8 +186,8 @@ export async function getStats(): Promise<Stats | null> {
 }
 
 export async function getTimeline(): Promise<TimelineDay[]> {
-  const data = await request<TimelineDay[]>('/timeline');
-  return data ?? [];
+  const data = await request<{ days: TimelineDay[] }>('/timeline');
+  return data?.days ?? [];
 }
 
 export async function triggerCycle(): Promise<boolean> {

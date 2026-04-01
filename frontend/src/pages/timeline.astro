@@ -125,14 +125,14 @@ for (const day of timeline) {
     ) : (
       <div class="space-y-12" id="timeline-container">
         {timeline.map((day) => (
-          <div class="timeline-day" data-day={day.day}>
+          <div class="timeline-day" data-day={day.date}>
             {/* Day Header */}
             <div class="sticky top-16 z-10 py-3 bg-void/90 backdrop-blur-sm border-b border-white/5 mb-6">
               <div class="flex items-center gap-4">
                 <div class="w-3 h-3 rounded-full border-2 border-info/50 bg-info/20"></div>
                 <div>
                   <h2 class="font-mono text-sm font-medium text-white">
-                    {new Date(day.day + 'T00:00:00').toLocaleDateString('en-US', {
+                    {new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', {
                       weekday: 'long',
                       year: 'numeric',
                       month: 'long',

@@ -10,11 +10,8 @@ interface Props {
 const { room, compact = false } = Astro.props;
 
 const imageUrl = room ? assetUrl(room.image_url) : null;
-const excerpt = room
-  ? room.content.length > 200
-    ? room.content.slice(0, 200) + '...'
-    : room.content
-  : '';
+const content = room?.content ?? '';
+const excerpt = content.length > 200 ? content.slice(0, 200) + '...' : content;
 ---
 
 {room ? (
@@ -94,12 +91,12 @@ const excerpt = room
             Cost: <span class="text-cost">{formatCost(room.total_cost)}</span>
           </span>
           <span class="font-mono text-[10px]">
-            {room.connections.length} connections
+            {room.connections?.length ?? 0} connections
           </span>
-          {room.image_url && (
+          {(room.image_url || room.has_image) && (
             <span class="font-mono text-[10px] text-creative">IMG</span>
           )}
-          {room.music_url && (
+          {(room.music_url || room.has_music) && (
             <span class="font-mono text-[10px] text-alive">AUD</span>
           )}
         </div>

@@ -67,7 +67,8 @@ const topTags = stats?.top_tags ?? [];
         <p class="font-mono text-sm font-medium text-alive mt-2">
           {stats
             ? (() => {
-                const hours = Math.floor(stats.uptime_seconds / 3600);
+                const uptimeSec = stats.uptime_seconds ?? (stats.uptime_days ?? 0) * 86400;
+                const hours = Math.floor(uptimeSec / 3600);
                 const days = Math.floor(hours / 24);
                 return days > 0 ? `${days}d ${hours % 24}h` : `${hours}h`;
               })()
