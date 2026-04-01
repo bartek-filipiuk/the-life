@@ -38,17 +38,17 @@ const excerpt = content.length > 200 ? content.slice(0, 200) + '...' : content;
       <div class="space-y-2">
         <div class="flex items-center gap-2 flex-wrap">
           <span class:list={[
-            'font-mono text-[10px] uppercase tracking-[0.2em] px-2 py-0.5 rounded-full border',
+            'font-mono text-xs uppercase tracking-[0.2em] px-2 py-0.5 rounded-full border',
             contentTypeColor(room.content_type),
             `border-current/20 bg-current/5`,
           ]}>
             {room.content_type}
           </span>
-          <span class="font-mono text-[10px] text-white/30">
+          <span class="font-mono text-xs text-white/30">
             #{room.cycle_number}
           </span>
           {room.mood && (
-            <span class="font-mono text-[10px] text-white/20">
+            <span class="font-mono text-xs text-white/20">
               {room.mood}
             </span>
           )}
@@ -72,12 +72,12 @@ const excerpt = content.length > 200 ? content.slice(0, 200) + '...' : content;
       {room.tags.length > 0 && (
         <div class="flex flex-wrap gap-1.5">
           {room.tags.slice(0, compact ? 3 : 6).map((tag) => (
-            <span class="font-mono text-[10px] text-white/25 px-2 py-0.5 rounded bg-white/5">
+            <span class="font-mono text-xs text-white/25 px-2 py-0.5 rounded bg-white/5">
               {tag}
             </span>
           ))}
           {room.tags.length > (compact ? 3 : 6) && (
-            <span class="font-mono text-[10px] text-white/20">
+            <span class="font-mono text-xs text-white/20">
               +{room.tags.length - (compact ? 3 : 6)}
             </span>
           )}
@@ -87,17 +87,17 @@ const excerpt = content.length > 200 ? content.slice(0, 200) + '...' : content;
       {/* Footer meta */}
       {!compact && (
         <div class="flex items-center gap-4 pt-2 border-t border-white/5 text-white/20">
-          <span class="font-mono text-[10px]">
+          <span class="font-mono text-xs">
             Cost: <span class="text-cost">{formatCost(room.total_cost)}</span>
           </span>
-          <span class="font-mono text-[10px]">
+          <span class="font-mono text-xs">
             {room.connections?.length ?? 0} connections
           </span>
           {(room.image_url || room.has_image) && (
-            <span class="font-mono text-[10px] text-creative">IMG</span>
+            <span class="font-mono text-xs text-creative">IMG</span>
           )}
           {(room.music_url || room.has_music) && (
-            <span class="font-mono text-[10px] text-alive">AUD</span>
+            <span class="font-mono text-xs text-alive">AUD</span>
           )}
         </div>
       )}

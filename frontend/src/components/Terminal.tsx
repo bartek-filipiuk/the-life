@@ -36,7 +36,7 @@ export default function Terminal() {
 
     const apiUrl =
       (import.meta as unknown as { env?: Record<string, string> }).env?.PUBLIC_API_URL ??
-      'http://localhost:8000';
+      'http://localhost:8765';
 
     // Close existing connection
     if (eventSourceRef.current) {
@@ -54,22 +54,22 @@ export default function Terminal() {
 
       es.onmessage = (event: MessageEvent) => {
         try {
-          const entry = JSON.parse(event.data as string) as CycleLogEntry;
-          setLines((prev) => {
-            const next = [...prev, entry];
-            return next.length > MAX_LINES ? next.slice(-MAX_LINES) : next;
-          });
-        } catch {
-          // Non-JSON message, treat as plain text
+          const data = JSON.parse(event.data as string);
+          // Skip heartbeat messages
+          if (data.heartbeat) return;
+          // Handle log messages from SSE
           const entry: CycleLogEntry = {
-            timestamp: new Date().toISOString(),
-            level: 'info',
-            message: String(event.data),
+            timestamp: data.timestamp || new Date().toISOString(),
+            level: data.level || 'info',
+            message: data.log || data.message || String(event.data),
+            step: data.step,
           };
           setLines((prev) => {
             const next = [...prev, entry];
             return next.length > MAX_LINES ? next.slice(-MAX_LINES) : next;
           });
+        } catch {
+          // Non-JSON — skip
         }
       };
 

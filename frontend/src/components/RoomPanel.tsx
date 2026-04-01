@@ -14,7 +14,7 @@ export default function RoomPanel() {
 
   const apiUrl =
     (import.meta as unknown as { env?: Record<string, string> }).env?.PUBLIC_API_URL ??
-    'http://localhost:8000';
+    'http://localhost:8765';
 
   const handleSelectRoom = useCallback(
     (roomId: string) => {

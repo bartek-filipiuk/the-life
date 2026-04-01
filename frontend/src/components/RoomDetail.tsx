@@ -17,7 +17,7 @@ export default function RoomDetail() {
 
   const apiUrl =
     (import.meta as unknown as { env?: Record<string, string> }).env?.PUBLIC_API_URL ??
-    'http://localhost:8000';
+    'http://localhost:8765';
 
   useEffect(() => {
     // Extract room ID from URL: /room/[id]

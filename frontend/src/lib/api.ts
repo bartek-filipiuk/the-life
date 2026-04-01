@@ -112,8 +112,8 @@ export interface CycleLogEntry {
 
 const BASE_URL: string =
   typeof import.meta !== 'undefined' && (import.meta as Record<string, unknown>).env
-    ? ((import.meta as unknown as { env: Record<string, string> }).env.PUBLIC_API_URL ?? 'http://localhost:8000')
-    : 'http://localhost:8000';
+    ? ((import.meta as unknown as { env: Record<string, string> }).env.PUBLIC_API_URL ?? 'http://localhost:8765')
+    : 'http://localhost:8765';
 
 const TIMEOUT_MS = 10_000;
 
