@@ -37,20 +37,20 @@
 
 ## Stage 4: AI Cycle Engine
 
-- [ ] **4.1** Create `backend/app/prompts/__init__.py`, `backend/app/prompts/system.py` — system prompt establishing AI entity identity. Configurable personality seed.
-- [ ] **4.2** Create `backend/app/prompts/decision.py` — decision phase prompt template. Takes: recent rooms, similar rooms, arc summary, anti-repetition list, budget remaining. Returns: structured tool-calling prompt.
-- [ ] **4.3** Create `backend/app/prompts/creation.py` — creation phase prompt template. Takes: decision output, tool results, search findings. Returns: room content generation prompt.
-- [ ] **4.4** Create `backend/app/cycle_engine.py` — main orchestrator. Full cycle: gather_context → decision_phase → execute_tools (asyncio.gather) → creation_phase → novelty_check → persist. Budget checking before each cycle. Graceful degradation on tool failures. Comprehensive logging per step. **Security: never log full API keys, sanitize any user-influenced data in logs.**
-- [ ] **4.5** **TEST:** Write `backend/tests/test_cycle_engine.py` — mock all dependencies, test full cycle happy path, test tool failure graceful degradation, test budget exceeded behavior, test novelty retry, test meta-reflection trigger (every 10 cycles).
-- [ ] **4.6** **TEST:** Write `backend/tests/test_prompts.py` — test prompt templates render correctly with various inputs, no injection possible through room content in prompts.
+- [x] **4.1** Create `backend/app/prompts/__init__.py`, `backend/app/prompts/system.py` — system prompt establishing AI entity identity. Configurable personality seed.
+- [x] **4.2** Create `backend/app/prompts/decision.py` — decision phase prompt template. Takes: recent rooms, similar rooms, arc summary, anti-repetition list, budget remaining. Returns: structured tool-calling prompt.
+- [x] **4.3** Create `backend/app/prompts/creation.py` — creation phase prompt template. Takes: decision output, tool results, search findings. Returns: room content generation prompt.
+- [x] **4.4** Create `backend/app/cycle_engine.py` — main orchestrator. Full cycle: gather_context → decision_phase → execute_tools (asyncio.gather) → creation_phase → novelty_check → persist. Budget checking before each cycle. Graceful degradation on tool failures. Comprehensive logging per step. **Security: never log full API keys, sanitize any user-influenced data in logs.**
+- [x] **4.5** **TEST:** Write `backend/tests/test_cycle_engine.py` — mock all dependencies, test full cycle happy path, test tool failure graceful degradation, test budget exceeded behavior, test novelty retry, test meta-reflection trigger (every 10 cycles).
+- [x] **4.6** **TEST:** Write `backend/tests/test_prompts.py` — test prompt templates render correctly with various inputs, no injection possible through room content in prompts.
 
 ## Stage 5: FastAPI App & API
 
-- [ ] **5.1** Create `backend/app/api/__init__.py`, `backend/app/api/schemas.py` — Pydantic response models (RoomResponse, GraphResponse, StatsResponse, TimelineResponse).
-- [ ] **5.2** Create `backend/app/api/routes.py` — REST endpoints: GET /health, GET /rooms, GET /rooms/{id}, GET /graph, GET /stats, GET /timeline, GET /current-cycle (SSE), POST /trigger. **Security: rate limit POST /trigger (1 req/min), validate room_id as UUID, paginate all list endpoints (max 100 per page).**
-- [ ] **5.3** Create `backend/app/main.py` — FastAPI app with lifespan (APScheduler setup, ChromaDB init, SQLite init). CORS middleware for frontend origin. Static files serving for assets. **Security: restrict CORS to specific origins, add security headers (X-Content-Type-Options, X-Frame-Options).**
-- [ ] **5.4** **TEST:** Write `backend/tests/test_api.py` — test all endpoints with FastAPI TestClient, test pagination, test invalid IDs, test rate limiting on trigger, test CORS headers, test SSE streaming.
-- [ ] **5.5** **TEST:** Write `backend/tests/conftest.py` — shared fixtures: test config, temp directories, mock API clients, test database.
+- [x] **5.1** Create `backend/app/api/__init__.py`, `backend/app/api/schemas.py` — Pydantic response models (RoomResponse, GraphResponse, StatsResponse, TimelineResponse).
+- [x] **5.2** Create `backend/app/api/routes.py` — REST endpoints: GET /health, GET /rooms, GET /rooms/{id}, GET /graph, GET /stats, GET /timeline, GET /current-cycle (SSE), POST /trigger. **Security: rate limit POST /trigger (1 req/min), validate room_id as UUID, paginate all list endpoints (max 100 per page).**
+- [x] **5.3** Create `backend/app/main.py` — FastAPI app with lifespan (APScheduler setup, ChromaDB init, SQLite init). CORS middleware for frontend origin. Static files serving for assets. **Security: restrict CORS to specific origins, add security headers (X-Content-Type-Options, X-Frame-Options).**
+- [x] **5.4** **TEST:** Write `backend/tests/test_api.py` — test all endpoints with FastAPI TestClient, test pagination, test invalid IDs, test rate limiting on trigger, test CORS headers, test SSE streaming.
+- [x] **5.5** **TEST:** Write `backend/tests/conftest.py` — shared fixtures: test config, temp directories, mock API clients, test database.
 
 ## Stage 6: Frontend (Astro + Tailwind + Sigma.js)
 
@@ -69,9 +69,9 @@
 
 ## Stage 7: Docker & Deployment
 
-- [ ] **7.1** Create `backend/Dockerfile` — Python 3.12, install deps, copy app, run uvicorn. **Security: non-root user, no dev deps in production, multi-stage build.**
+- [x] **7.1** Create `backend/Dockerfile` — Python 3.12, install deps, copy app, run uvicorn. **Security: non-root user, no dev deps in production, multi-stage build.**
 - [ ] **7.2** Create `frontend/Dockerfile` — Node build stage → nginx serve stage. **Security: non-root nginx, minimal base image.**
-- [ ] **7.3** Create `docker-compose.yml` — backend (port 8000) + frontend (port 3000) + shared volume for /data. Environment variables from .env file.
+- [x] **7.3** Create `docker-compose.yml` — backend (port 8000) + frontend (port 3000) + shared volume for /data. Environment variables from .env file.
 - [ ] **7.4** **INTEGRATION TEST:** docker-compose up, POST /trigger, verify room appears in GET /rooms and GET /graph, verify frontend renders at localhost:3000.
 
 ---
