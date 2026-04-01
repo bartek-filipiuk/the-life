@@ -77,12 +77,12 @@
 ---
 
 ## Security Checklist (verify across all stages)
-- [ ] All API keys from env vars only, never committed
-- [ ] All SQL queries parameterized
-- [ ] All file paths validated (no path traversal)
-- [ ] All external API calls have timeouts
-- [ ] Rate limiting on write endpoints
-- [ ] CORS restricted to known origins
-- [ ] No secrets in logs
-- [ ] Docker runs as non-root
-- [ ] Input validation on all public endpoints
+- [x] All API keys from env vars only, never committed
+- [x] All SQL queries parameterized
+- [x] All file paths validated (no path traversal)
+- [x] All external API calls have timeouts
+- [x] Rate limiting on write endpoints
+- [x] CORS restricted to known origins
+- [x] No secrets in logs
+- [x] Docker runs as non-root
+- [x] Input validation on all public endpoints
