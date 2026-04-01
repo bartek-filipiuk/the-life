@@ -20,6 +20,7 @@
     "@types/react-dom": "^19.1.0",
     "astro": "^5.18.1",
     "graphology": "^0.26.0",
+    "graphology-communities-louvain": "^2.0.2",
     "graphology-layout-forceatlas2": "^0.10.1",
     "graphology-layout-noverlap": "^0.4.2",
     "graphology-types": "^0.24.7",

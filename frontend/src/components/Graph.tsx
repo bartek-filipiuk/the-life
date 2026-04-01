@@ -11,10 +11,22 @@ const API_URL =
     ? (import.meta as unknown as { env?: Record<string, string> }).env?.PUBLIC_API_URL ?? 'http://localhost:8765'
     : 'http://localhost:8765';
 
+// Cluster color palette — distinct, vibrant
+const CLUSTER_COLORS = [
+  '#c084fc', '#6b9fff', '#ff6b6b', '#00ff88', '#f59e0b',
+  '#ec4899', '#14b8a6', '#f97316', '#8b5cf6', '#22d3ee',
+];
+
+// Content type labels for clusters
+const CLUSTER_LABELS_FALLBACK = [
+  'CLUSTER A', 'CLUSTER B', 'CLUSTER C', 'CLUSTER D', 'CLUSTER E',
+  'CLUSTER F', 'CLUSTER G', 'CLUSTER H', 'CLUSTER I', 'CLUSTER J',
+];
+
 /**
- * Time Spiral Graph — rooms laid out on an Archimedean spiral.
- * Center = first room (Day 0), outer edge = latest.
- * Curved edges connect thematically related rooms.
+ * Constellation Graph — nodes auto-clustered by Louvain community detection.
+ * Each cluster is a "star system" placed on a circle, nodes orbit within.
+ * Inter-cluster edges are dashed/subtle, intra-cluster edges are solid.
  */
 export default function Graph({ onSelectRoom }: GraphProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -27,14 +39,8 @@ export default function Graph({ onSelectRoom }: GraphProps) {
   useEffect(() => {
     const controller = new AbortController();
     fetch(`${API_URL}/graph`, { signal: controller.signal })
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json() as Promise<GraphData>;
-      })
-      .then((data) => {
-        setGraphData(data);
-        setLoading(false);
-      })
+      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() as Promise<GraphData>; })
+      .then((data) => { setGraphData(data); setLoading(false); })
       .catch((err: unknown) => {
         if (err instanceof DOMException && err.name === 'AbortError') return;
         setError('Could not load graph data');
@@ -43,7 +49,7 @@ export default function Graph({ onSelectRoom }: GraphProps) {
     return () => controller.abort();
   }, []);
 
-  // Build graph with spiral layout
+  // Build constellation graph
   useEffect(() => {
     if (!graphData || !containerRef.current || graphData.nodes.length === 0) return;
 
@@ -64,78 +70,154 @@ export default function Graph({ onSelectRoom }: GraphProps) {
       const { default: GraphClass } = await import('graphology');
       const { default: Sigma } = await import('sigma');
 
-      // Try to import edge-curve, fall back to default
+      // Try Louvain community detection
+      let louvain: ((g: unknown) => Record<string, number>) | null = null;
+      try {
+        const mod = await import('graphology-communities-louvain');
+        louvain = mod.default ?? mod;
+      } catch { /* fallback to content_type grouping */ }
+
+      // Try curved edges
       let edgeProgram: unknown = undefined;
       try {
         const mod = await import('@sigma/edge-curve');
         edgeProgram = mod.EdgeCurvedArrowProgram ?? mod.EdgeCurveProgram ?? mod.default;
-      } catch {
-        // edge-curve not available, use default straight lines
-      }
+      } catch { /* straight lines fallback */ }
 
       if (!containerRef.current || !graphData) return;
 
       const graph = new GraphClass();
 
-      // Sort nodes by cycle_number for spiral placement
-      const sortedNodes = [...graphData.nodes].sort(
-        (a, b) => (a.cycle_number ?? 0) - (b.cycle_number ?? 0)
-      );
+      // Build node map for lookup
+      const nodeMap = new Map<string, GraphNode>();
+      graphData.nodes.forEach((n) => nodeMap.set(n.id, n));
 
-      const n = sortedNodes.length;
+      // Add all nodes temporarily (for Louvain)
+      graphData.nodes.forEach((node) => {
+        graph.addNode(node.id, { label: node.label });
+      });
+      graphData.edges.forEach((edge, i) => {
+        if (graph.hasNode(edge.source) && graph.hasNode(edge.target)) {
+          try { graph.addEdge(edge.source, edge.target, { key: `e-${i}` }); } catch { /* dup */ }
+        }
+      });
 
-      // Archimedean spiral: r = a + b*θ
-      // θ increases per node, r grows outward
-      const spiralSpacing = 55;   // distance between spiral arms — generous
-      const angleStep = 2.399;    // golden angle ≈ 137.5° for even distribution
-      const centerX = 0;
-      const centerY = 0;
+      // Detect communities
+      let communities: Record<string, number> = {};
+      if (louvain && graph.order > 2 && graph.size > 0) {
+        try {
+          communities = louvain(graph) as Record<string, number>;
+        } catch {
+          // Fallback: group by content_type
+          graphData.nodes.forEach((n) => {
+            const types = ['reflection', 'poem', 'essay', 'haiku', 'story'];
+            communities[n.id] = types.indexOf(n.content_type) >= 0 ? types.indexOf(n.content_type) : 0;
+          });
+        }
+      } else {
+        // Fallback: group by content_type
+        const types = ['reflection', 'poem', 'essay', 'haiku', 'story'];
+        graphData.nodes.forEach((n) => {
+          communities[n.id] = types.indexOf(n.content_type) >= 0 ? types.indexOf(n.content_type) : 0;
+        });
+      }
 
-      sortedNodes.forEach((node: GraphNode, index: number) => {
-        // Spiral coordinates
-        const theta = index * angleStep;
-        const r = spiralSpacing * Math.sqrt(index + 1); // sqrt for even density
-        const x = centerX + r * Math.cos(theta);
-        const y = centerY + r * Math.sin(theta);
+      // Clear and rebuild with positions
+      graph.clear();
 
-        // Size grows slightly with time (AI evolves)
-        const baseSize = 10;
-        const growthFactor = 1 + (index / n) * 0.8; // 1.0 → 1.8x
-        const connectionBonus = (node.size ?? 1) * 2;
-        const nodeSize = Math.max(12, Math.min(32, baseSize * growthFactor + connectionBonus));
+      // Group nodes by community
+      const clusterGroups = new Map<number, string[]>();
+      for (const [nodeId, cluster] of Object.entries(communities)) {
+        if (!clusterGroups.has(cluster)) clusterGroups.set(cluster, []);
+        clusterGroups.get(cluster)!.push(nodeId);
+      }
 
-        const color = contentTypeHex(node.content_type);
-        const isLatest = index === n - 1;
+      const numClusters = clusterGroups.size;
+      const clusterKeys = Array.from(clusterGroups.keys()).sort((a, b) => a - b);
 
-        graph.addNode(node.id, {
-          label: node.label,
-          x,
-          y,
-          size: nodeSize,
-          color,
-          type: 'circle',
-          originalColor: color,
-          originalSize: nodeSize,
-          borderColor: isLatest ? '#00ff88' : undefined,
-          borderSize: isLatest ? 3 : 0,
-          zIndex: isLatest ? 10 : index,
+      // Place cluster centers on a large circle
+      const mainRadius = Math.max(150, numClusters * 60);
+      const clusterCenters = new Map<number, { x: number; y: number }>();
+
+      clusterKeys.forEach((clusterId, i) => {
+        const angle = (i / numClusters) * Math.PI * 2 - Math.PI / 2;
+        clusterCenters.set(clusterId, {
+          x: mainRadius * Math.cos(angle),
+          y: mainRadius * Math.sin(angle),
         });
       });
 
-      // Add edges with curvature
+      // Build cluster labels from most common tags/types
+      const clusterLabels = new Map<number, string>();
+      clusterKeys.forEach((clusterId) => {
+        const members = clusterGroups.get(clusterId) || [];
+        const typeCounts = new Map<string, number>();
+        members.forEach((nid) => {
+          const node = nodeMap.get(nid);
+          if (node) {
+            const t = node.content_type || 'unknown';
+            typeCounts.set(t, (typeCounts.get(t) || 0) + 1);
+          }
+        });
+        const topType = [...typeCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || 'mixed';
+        const tags = members.flatMap((nid) => nodeMap.get(nid)?.tags || []);
+        const tagCounts = new Map<string, number>();
+        tags.forEach((t) => tagCounts.set(t, (tagCounts.get(t) || 0) + 1));
+        const topTag = [...tagCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || '';
+        clusterLabels.set(clusterId, `${topType.toUpperCase()}${topTag ? ' · ' + topTag : ''}`);
+      });
+
+      // Place nodes around their cluster center
+      clusterKeys.forEach((clusterId) => {
+        const members = clusterGroups.get(clusterId) || [];
+        const center = clusterCenters.get(clusterId)!;
+        const orbitRadius = Math.max(40, members.length * 12);
+
+        members.forEach((nodeId, j) => {
+          const node = nodeMap.get(nodeId);
+          if (!node) return;
+
+          const angle = (j / members.length) * Math.PI * 2 + Math.random() * 0.3;
+          const r = orbitRadius * (0.3 + Math.random() * 0.7);
+          const x = center.x + r * Math.cos(angle);
+          const y = center.y + r * Math.sin(angle);
+
+          const clusterColor = CLUSTER_COLORS[clusterId % CLUSTER_COLORS.length];
+          const nodeColor = contentTypeHex(node.content_type);
+          const connectionBonus = (node.size ?? 1) * 2;
+          const nodeSize = Math.max(10, Math.min(28, 10 + connectionBonus));
+
+          graph.addNode(nodeId, {
+            label: node.label,
+            x, y,
+            size: nodeSize,
+            color: nodeColor,
+            type: 'circle',
+            originalColor: nodeColor,
+            originalSize: nodeSize,
+            community: clusterId,
+            clusterColor,
+          });
+        });
+      });
+
+      // Add edges
       graphData.edges.forEach((edge, index) => {
         if (graph.hasNode(edge.source) && graph.hasNode(edge.target)) {
           try {
+            const srcCommunity = graph.getNodeAttribute(edge.source, 'community');
+            const tgtCommunity = graph.getNodeAttribute(edge.target, 'community');
+            const isInterCluster = srcCommunity !== tgtCommunity;
+
             graph.addEdge(edge.source, edge.target, {
               key: `e-${index}`,
-              color: '#ffffff0c',
-              size: 0.8,
-              curvature: 0.3 + Math.random() * 0.2, // slight variation
+              color: isInterCluster ? '#ffffff08' : '#ffffff18',
+              size: isInterCluster ? 0.5 : 1,
+              curvature: 0.2 + Math.random() * 0.15,
               type: 'curved',
+              interCluster: isInterCluster,
             });
-          } catch {
-            // duplicate
-          }
+          } catch { /* dup */ }
         }
       });
 
@@ -144,21 +226,23 @@ export default function Graph({ onSelectRoom }: GraphProps) {
         (sigmaRef.current as { kill: () => void }).kill();
       }
 
-      // Sigma settings
       const sigmaSettings: Record<string, unknown> = {
         renderEdgeLabels: false,
         allowInvalidContainer: true,
-        defaultEdgeColor: '#ffffff18',
+        defaultEdgeColor: '#ffffff12',
         defaultNodeColor: '#ffffff',
         labelColor: { color: '#ffffffcc' },
         labelFont: '"JetBrains Mono", monospace',
         labelSize: 12,
         labelWeight: '500',
-        labelRenderedSizeThreshold: 10,
-        stagePadding: 60,
+        labelRenderedSizeThreshold: 9,
+        stagePadding: 80,
         nodeReducer: (node: string, data: Record<string, unknown>) => {
           const res = { ...data };
           if (currentHovered) {
+            const hoveredCommunity = graph.getNodeAttribute(currentHovered, 'community');
+            const nodeCommunity = data['community'];
+
             if (node === currentHovered) {
               res['highlighted'] = true;
               res['size'] = ((data['originalSize'] as number) ?? 14) * 1.5;
@@ -167,9 +251,14 @@ export default function Graph({ onSelectRoom }: GraphProps) {
               graph.hasEdge(node, currentHovered) ||
               graph.hasEdge(currentHovered, node)
             ) {
+              // Direct neighbor
               res['size'] = ((data['originalSize'] as number) ?? 14) * 1.15;
+            } else if (nodeCommunity === hoveredCommunity) {
+              // Same cluster — slightly dimmed
+              res['color'] = ((data['originalColor'] as string) ?? '#fff') + 'aa';
             } else {
-              res['color'] = '#ffffff10';
+              // Other cluster — heavily dimmed
+              res['color'] = '#ffffff08';
               res['label'] = '';
             }
           }
@@ -184,14 +273,13 @@ export default function Graph({ onSelectRoom }: GraphProps) {
               res['color'] = '#ffffff60';
               res['size'] = 2.5;
             } else {
-              res['color'] = '#ffffff04';
+              res['color'] = '#ffffff03';
             }
           }
           return res;
         },
       };
 
-      // Use curved edges if available
       if (edgeProgram) {
         sigmaSettings['defaultEdgeType'] = 'curved';
         sigmaSettings['edgeProgramClasses'] = { curved: edgeProgram };
@@ -199,22 +287,18 @@ export default function Graph({ onSelectRoom }: GraphProps) {
 
       sigma = new Sigma(graph, containerRef.current, sigmaSettings);
 
-      // Click → select room
+      // Click
       sigma.on('clickNode', (event: { node?: string }) => {
         if (event.node && onSelectRoom) onSelectRoom(event.node);
       });
 
-      // Hover via refresh (no state dependency)
+      // Hover
       sigma.on('enterNode', (event: { node?: string }) => {
         if (event.node) { currentHovered = event.node; sigma?.refresh(); }
       });
       sigma.on('leaveNode', () => {
         currentHovered = null; sigma?.refresh();
       });
-
-      // Zoom out slightly to show full spiral with breathing room
-      const camera = sigma.getCamera();
-      camera.animatedReset({ duration: 0 });
 
       sigmaRef.current = sigma;
     }
@@ -229,7 +313,6 @@ export default function Graph({ onSelectRoom }: GraphProps) {
     };
   }, [graphData, onSelectRoom]);
 
-  // Zoom controls
   const handleZoom = useCallback((dir: 'in' | 'out') => {
     const s = sigmaRef.current as { getCamera: () => { animatedZoom: (o: { duration: number; factor: number }) => void; animatedUnzoom: (o: { duration: number; factor: number }) => void } } | null;
     if (!s) return;
@@ -244,13 +327,11 @@ export default function Graph({ onSelectRoom }: GraphProps) {
 
   return (
     <div className="relative w-full" style={{ height: '600px' }}>
-      {/* Title */}
       <div className="absolute top-4 left-4 z-10">
         <p className="font-mono text-xs text-white/40 uppercase tracking-[0.3em]">World Map</p>
-        <p className="font-mono text-[10px] text-white/20 mt-1">Center = Day 0 &middot; Outer = Latest</p>
+        <p className="font-mono text-[10px] text-white/20 mt-1">Clusters = thematic islands &middot; Click to explore</p>
       </div>
 
-      {/* Zoom */}
       <div className="absolute top-4 right-4 z-10 flex flex-col gap-1">
         {[
           { label: '+', action: () => handleZoom('in'), title: 'Zoom in' },
@@ -264,7 +345,6 @@ export default function Graph({ onSelectRoom }: GraphProps) {
         ))}
       </div>
 
-      {/* Legend */}
       <div className="absolute bottom-4 left-4 z-10 flex flex-wrap gap-4">
         {[
           { label: 'Poem', color: '#c084fc' },
@@ -280,24 +360,21 @@ export default function Graph({ onSelectRoom }: GraphProps) {
         ))}
       </div>
 
-      {/* Loading */}
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-void/50 z-20">
           <div className="text-center space-y-3">
             <div className="w-8 h-8 border-2 border-alive/30 border-t-alive rounded-full animate-spin mx-auto" />
-            <p className="font-mono text-sm text-white/40">Loading spiral...</p>
+            <p className="font-mono text-sm text-white/40">Detecting constellations...</p>
           </div>
         </div>
       )}
 
-      {/* Error */}
       {error && !loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-void/50 z-20">
           <p className="font-mono text-sm text-white/40">{error}</p>
         </div>
       )}
 
-      {/* Empty */}
       {!loading && !error && graphData && graphData.nodes.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="text-center space-y-3">
@@ -307,7 +384,6 @@ export default function Graph({ onSelectRoom }: GraphProps) {
         </div>
       )}
 
-      {/* Sigma container */}
       <div ref={containerRef}
         className="w-full h-full rounded-lg border border-white/5 bg-[#06060a]"
         style={{ cursor: 'grab' }} />
