@@ -21,8 +21,8 @@
 - [x] **2.4** Create `backend/app/memory/novelty.py` — embed text via ChromaDB, compare cosine similarity to existing rooms. Return bool (is_novel) + closest match distance.
 - [x] **2.5** **TEST:** Write `backend/tests/test_sqlite_store.py` — test all CRUD operations, pagination, stats aggregation, parameterized queries safety.
 - [x] **2.6** **TEST:** Write `backend/tests/test_chromadb_store.py` — test add/query rooms, similarity search, collection management.
-- [ ] **2.7** **TEST:** Write `backend/tests/test_novelty.py` — test novelty check with similar/different texts, threshold behavior.
-- [ ] **2.8** **TEST:** Write `backend/tests/test_file_store.py` — test save/load assets, path traversal prevention, invalid UUID rejection.
+- [x] **2.7** **TEST:** Write `backend/tests/test_novelty.py` — test novelty check with similar/different texts, threshold behavior.
+- [x] **2.8** **TEST:** Write `backend/tests/test_file_store.py` — test save/load assets, path traversal prevention, invalid UUID rejection.
 
 ## Stage 3: External API Clients (Tools)
 
