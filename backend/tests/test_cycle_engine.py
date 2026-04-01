@@ -85,9 +85,8 @@ def mock_chromadb():
 def mock_sqlite():
     store = MagicMock(spec=SQLiteStore)
     store.count_rooms = AsyncMock(return_value=0)
-    store.daily_cost = AsyncMock(return_value=0.0)
+    store.get_daily_cost = AsyncMock(return_value=0.0)
     store.insert_room = AsyncMock()
-    store.insert_stats = AsyncMock()
     return store
 
 
@@ -116,7 +115,6 @@ class TestHappyPath:
         assert result.room_data["title"] == "Fibonacci Dreams"
         assert result.llm_tokens == 450  # 150 + 300
         assert mock_sqlite.insert_room.called
-        assert mock_sqlite.insert_stats.called
         assert mock_chromadb.add_room.called
 
     @pytest.mark.asyncio
@@ -133,7 +131,7 @@ class TestHappyPath:
 class TestBudgetExhausted:
     @pytest.mark.asyncio
     async def test_skips_cycle_when_budget_exhausted(self, engine, mock_sqlite):
-        mock_sqlite.daily_cost = AsyncMock(return_value=20.0)  # equals daily budget
+        mock_sqlite.get_daily_cost = AsyncMock(return_value=20.0)  # equals daily budget
 
         result = await engine.run_cycle()
 

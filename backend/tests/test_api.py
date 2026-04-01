@@ -46,17 +46,17 @@ def app_with_data():
 
     mock_sqlite = MagicMock(spec=SQLiteStore)
     mock_sqlite.count_rooms = AsyncMock(return_value=5)
-    mock_sqlite.total_cost = AsyncMock(return_value=1.23)
-    mock_sqlite.total_tokens = AsyncMock(return_value=5000)
-    mock_sqlite.cost_per_day = AsyncMock(return_value=[{"day": "2026-04-01", "cost": 1.23}])
-    mock_sqlite.list_paginated = AsyncMock(return_value=[
+    mock_sqlite.get_total_cost = AsyncMock(return_value=1.23)
+    mock_sqlite.get_total_tokens = AsyncMock(return_value=5000)
+    mock_sqlite.get_cost_per_day = AsyncMock(return_value=[{"day": "2026-04-01", "cost": 1.23}])
+    mock_sqlite.list_rooms_paginated = AsyncMock(return_value=[
         {"id": "test-id", "data": json.dumps({
             "id": "test-id", "cycle_number": 1, "created_at": "2026-04-01T12:00:00Z",
             "title": "Test Room", "content_type": "poem", "mood": "curious",
             "tags": ["test"], "total_cost": 0.05,
         })},
     ])
-    mock_sqlite.get_by_id = AsyncMock(return_value={
+    mock_sqlite.get_room_by_id = AsyncMock(return_value={
         "id": "aaaaaaaa-bbbb-4ccc-dddd-eeeeeeeeeeee",
         "data": json.dumps({
             "id": "aaaaaaaa-bbbb-4ccc-dddd-eeeeeeeeeeee",
@@ -65,7 +65,7 @@ def app_with_data():
             "mood": "curious", "tags": ["test"],
         }),
     })
-    mock_sqlite.list_by_day = AsyncMock(return_value=[])
+    mock_sqlite.list_rooms_by_day = AsyncMock(return_value=[])
 
     mock_settings = MagicMock()
     mock_settings.model = "test/model"
@@ -125,7 +125,7 @@ class TestGetRoom:
         assert response.status_code == 400
 
     def test_not_found(self, client, app_with_data):
-        app_with_data.state.sqlite.get_by_id = AsyncMock(return_value=None)
+        app_with_data.state.sqlite.get_room_by_id = AsyncMock(return_value=None)
         response = client.get("/rooms/aaaaaaaa-bbbb-4ccc-dddd-ffffffffffff")
         assert response.status_code == 404
 

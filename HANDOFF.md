@@ -72,7 +72,7 @@
 - [x] **7.1** Create `backend/Dockerfile` — Python 3.12, install deps, copy app, run uvicorn. **Security: non-root user, no dev deps in production, multi-stage build.**
 - [x] **7.2** Create `frontend/Dockerfile` — Node build stage → nginx serve stage. **Security: non-root nginx, minimal base image.**
 - [x] **7.3** Create `docker-compose.yml` — backend (port 8000) + frontend (port 3000) + shared volume for /data. Environment variables from .env file.
-- [ ] **7.4** **INTEGRATION TEST:** docker-compose up, POST /trigger, verify room appears in GET /rooms and GET /graph, verify frontend renders at localhost:3000.
+- [x] **7.4** **INTEGRATION TEST:** docker-compose up, POST /trigger, verify room appears in GET /rooms and GET /graph, verify frontend renders at localhost:3000.
 
 ---
 

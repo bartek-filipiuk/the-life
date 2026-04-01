@@ -50,7 +50,7 @@ async def list_rooms(
 ) -> PaginatedRooms:
     sqlite = request.app.state.sqlite
     total = await sqlite.count_rooms()
-    rooms_raw = await sqlite.list_paginated(page=page, per_page=per_page)
+    rooms_raw = await sqlite.list_rooms_paginated(page=page, per_page=per_page)
     rooms = [_to_summary(r) for r in rooms_raw]
     return PaginatedRooms(rooms=rooms, total=total, page=page, per_page=per_page)
 
@@ -59,7 +59,7 @@ async def list_rooms(
 async def get_room(request: Request, room_id: str) -> RoomResponse:
     _validate_uuid(room_id)
     sqlite = request.app.state.sqlite
-    room = await sqlite.get_by_id(room_id)
+    room = await sqlite.get_room_by_id(room_id)
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
     data = json.loads(room["data"]) if isinstance(room.get("data"), str) else room.get("data", {})
@@ -69,7 +69,7 @@ async def get_room(request: Request, room_id: str) -> RoomResponse:
 @router.get("/graph", response_model=GraphResponse)
 async def get_graph(request: Request) -> GraphResponse:
     sqlite = request.app.state.sqlite
-    all_rooms = await sqlite.list_paginated(page=1, per_page=10000)
+    all_rooms = await sqlite.list_rooms_paginated(page=1, per_page=10000)
 
     nodes: list[GraphNode] = []
     edges: list[GraphEdge] = []
@@ -109,9 +109,9 @@ async def get_stats(request: Request) -> StatsResponse:
     sqlite = request.app.state.sqlite
     settings = request.app.state.settings
     total_rooms = await sqlite.count_rooms()
-    total_cost = await sqlite.total_cost()
-    total_tokens = await sqlite.total_tokens()
-    cost_per_day = await sqlite.cost_per_day()
+    total_cost = await sqlite.get_total_cost()
+    total_tokens = await sqlite.get_total_tokens()
+    cost_per_day = await sqlite.get_cost_per_day()
     return StatsResponse(
         total_rooms=total_rooms,
         total_cost=total_cost,
@@ -124,12 +124,12 @@ async def get_stats(request: Request) -> StatsResponse:
 @router.get("/timeline", response_model=TimelineResponse)
 async def get_timeline(request: Request) -> TimelineResponse:
     sqlite = request.app.state.sqlite
-    cost_per_day = await sqlite.cost_per_day()
+    cost_per_day = await sqlite.get_cost_per_day()
     days: list[TimelineDayResponse] = []
 
     for day_entry in cost_per_day:
         date = day_entry.get("day", "")
-        rooms_raw = await sqlite.list_by_day(date)
+        rooms_raw = await sqlite.list_rooms_by_day(date)
         rooms = [_to_summary(r) for r in rooms_raw]
         days.append(TimelineDayResponse(date=date, rooms=rooms))
 

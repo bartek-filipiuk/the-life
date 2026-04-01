@@ -87,7 +87,7 @@ class CycleEngine:
             result.logs.append(f"[CYCLE] Starting cycle #{result.cycle_number}")
 
             # Budget check
-            daily_cost = await self._sqlite.daily_cost(
+            daily_cost = await self._sqlite.get_daily_cost(
                 datetime.now(timezone.utc).strftime("%Y-%m-%d")
             )
             budget_remaining = self._settings.budget.daily - daily_cost
@@ -403,23 +403,8 @@ class CycleEngine:
             "duration_ms": result.duration_ms,
         }
 
-        # SQLite
-        await self._sqlite.insert_room(result.room_id, result.cycle_number, now, full_record)
-
-        # Stats
-        await self._sqlite.insert_stats(
-            stat_id=str(uuid.uuid4()),
-            cycle_number=result.cycle_number,
-            created_at=now,
-            model=self._settings.model,
-            llm_tokens=result.llm_tokens,
-            llm_cost=result.llm_cost,
-            image_cost=result.image_cost,
-            music_cost=result.music_cost,
-            search_cost=result.search_cost,
-            total_cost=result.total_cost,
-            duration_ms=result.duration_ms,
-        )
+        # SQLite — insert_room takes a dict with id, cycle_number, created_at
+        await self._sqlite.insert_room(full_record)
 
         # ChromaDB
         tags = room.get("tags", [])

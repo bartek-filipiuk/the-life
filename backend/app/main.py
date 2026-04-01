@@ -36,7 +36,7 @@ async def lifespan(app: FastAPI):
     data_dir.mkdir(parents=True, exist_ok=True)
 
     sqlite = SQLiteStore(settings.storage.sqlite_path)
-    await sqlite.init()
+    await sqlite.connect()
     app.state.sqlite = sqlite
 
     chromadb = ChromaDBStore(settings.storage.chromadb_dir)
