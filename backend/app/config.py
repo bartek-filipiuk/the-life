@@ -3,6 +3,7 @@
 Security: API keys come from env vars ONLY, never from config.yaml.
 """
 
+import os
 from pathlib import Path
 from typing import Annotated
 
@@ -95,10 +96,14 @@ def load_settings(config_path: Path | None = None) -> Settings:
         with open(config_path) as f:
             raw = yaml.safe_load(f) or {}
 
-        # Flatten nested config for pydantic-settings
-        if "heartbeat_interval" in raw:
+        env_prefix = "THELIFE_"
+
+        # Flatten nested config for pydantic-settings.
+        # Only use YAML value when the corresponding env var is NOT set,
+        # so that env vars always take precedence.
+        if "heartbeat_interval" in raw and env_prefix + "HEARTBEAT_INTERVAL" not in os.environ:
             yaml_overrides["heartbeat_interval"] = raw["heartbeat_interval"]
-        if "model" in raw:
+        if "model" in raw and env_prefix + "MODEL" not in os.environ:
             yaml_overrides["model"] = raw["model"]
         if "budget" in raw:
             yaml_overrides["budget"] = BudgetConfig(**raw["budget"])
