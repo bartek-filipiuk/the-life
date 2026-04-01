@@ -221,7 +221,8 @@ export function assetUrl(path: string | null | undefined): string | null {
 }
 
 /** Format a cost value to display string. */
-export function formatCost(cost: number): string {
+export function formatCost(cost: number | undefined | null): string {
+  if (cost == null) return '$0.0000';
   return `$${cost.toFixed(4)}`;
 }
 

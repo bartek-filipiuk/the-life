@@ -71,6 +71,7 @@ class StatsResponse(BaseModel):
     total_rooms: int = 0
     total_cost: float = 0.0
     total_tokens: int = 0
+    avg_cost_per_room: float = 0.0
     cost_per_day: list[dict] = []
     model: str = ""
     uptime_days: int = 0

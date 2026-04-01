@@ -113,10 +113,12 @@ async def get_stats(request: Request) -> StatsResponse:
     total_cost = await sqlite.get_total_cost()
     total_tokens = await sqlite.get_total_tokens()
     cost_per_day = await sqlite.get_cost_per_day()
+    avg_cost = total_cost / total_rooms if total_rooms > 0 else 0.0
     return StatsResponse(
         total_rooms=total_rooms,
         total_cost=total_cost,
         total_tokens=total_tokens,
+        avg_cost_per_room=round(avg_cost, 4),
         cost_per_day=cost_per_day,
         model=settings.model,
     )
