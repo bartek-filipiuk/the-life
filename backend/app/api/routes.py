@@ -62,7 +62,8 @@ async def get_room(request: Request, room_id: str) -> RoomResponse:
     room = await sqlite.get_room_by_id(room_id)
     if not room:
         raise HTTPException(status_code=404, detail="Room not found")
-    data = json.loads(room["data"]) if isinstance(room.get("data"), str) else room.get("data", {})
+    # get_room_by_id returns parsed dict
+    data = room if "title" in room else json.loads(room.get("data", "{}"))
     return RoomResponse(**data)
 
 
@@ -77,16 +78,16 @@ async def get_graph(request: Request) -> GraphResponse:
 
     # First pass: collect connections
     for room in all_rooms:
-        data = json.loads(room["data"]) if isinstance(room.get("data"), str) else room.get("data", {})
+        data = room if "title" in room else json.loads(room.get("data", "{}"))
         connections = data.get("connections", [])
-        room_id = room.get("id", data.get("id", ""))
+        room_id = data.get("id", room.get("id", ""))
         connection_count[room_id] = len(connections)
         for target in connections:
             edges.append(GraphEdge(source=room_id, target=target))
 
     # Second pass: build nodes
     for room in all_rooms:
-        data = json.loads(room["data"]) if isinstance(room.get("data"), str) else room.get("data", {})
+        data = room if "title" in room else json.loads(room.get("data", "{}"))
         room_id = room.get("id", data.get("id", ""))
         tags = data.get("tags", [])
         if isinstance(tags, str):
@@ -191,8 +192,18 @@ def _validate_uuid(value: str) -> None:
 
 
 def _to_summary(room: dict[str, Any]) -> RoomSummary:
-    """Convert a raw room dict to RoomSummary."""
-    data = json.loads(room["data"]) if isinstance(room.get("data"), str) else room.get("data", {})
+    """Convert a room dict to RoomSummary.
+
+    Handles both formats: pre-parsed dict (from list_rooms_paginated)
+    and raw row with 'data' JSON column.
+    """
+    if "data" in room and isinstance(room["data"], str):
+        data = json.loads(room["data"])
+    elif "title" in room:
+        data = room  # already parsed
+    else:
+        data = room.get("data", room)
+
     tags = data.get("tags", [])
     if isinstance(tags, str):
         tags = [t.strip() for t in tags.split(",") if t.strip()]
