@@ -215,7 +215,7 @@ export default function Graph({ onSelectRoom }: GraphProps) {
       const sigmaSettings: Record<string, unknown> = {
         renderEdgeLabels: false,
         allowInvalidContainer: true,
-        defaultEdgeColor: '#00000000',  // edges hidden until hover/select
+        defaultEdgeColor: '#00000000',
         defaultNodeColor: '#ffffff',
         labelColor: { color: '#ffffffbb' },
         labelFont: '"JetBrains Mono", monospace',
@@ -223,6 +223,26 @@ export default function Graph({ onSelectRoom }: GraphProps) {
         labelWeight: '400',
         labelRenderedSizeThreshold: 6,
         stagePadding: 100,
+        // Disable white background on hover/highlight labels
+        defaultDrawNodeHover: () => {},
+        defaultDrawNodeLabel: (
+          context: CanvasRenderingContext2D,
+          data: Record<string, unknown>,
+          settings: Record<string, unknown>,
+        ) => {
+          const label = data['label'] as string;
+          if (!label) return;
+          const size = data['size'] as number ?? 10;
+          const x = data['x'] as number;
+          const y = data['y'] as number;
+          const fontSize = (settings['labelSize'] as number) ?? 11;
+          const isHighlighted = data['highlighted'] as boolean;
+
+          context.font = `${isHighlighted ? '600' : '400'} ${fontSize}px "JetBrains Mono", monospace`;
+          context.fillStyle = isHighlighted ? '#00ff88' : (data['labelColor'] as string ?? '#ffffffbb');
+          context.textAlign = 'left';
+          context.fillText(label, x + size + 4, y + fontSize / 3);
+        },
         // Show cluster labels always (forceLabel)
         nodeReducer: (node: string, data: Record<string, unknown>) => {
           const res = { ...data };
