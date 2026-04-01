@@ -198,10 +198,11 @@ export default function Graph({ onSelectRoom }: GraphProps) {
 
             graph.addEdge(edge.source, edge.target, {
               key: `e-${index}`,
-              color: isInter ? '#ffffff02' : '#ffffff04',
-              size: isInter ? 0.1 : 0.2,
+              color: '#00000000',  // fully hidden by default
+              size: 0.5,
               curvature: 0.15 + Math.random() * 0.1,
               type: 'curved',
+              isInter,
             });
           } catch {}
         }
@@ -214,7 +215,7 @@ export default function Graph({ onSelectRoom }: GraphProps) {
       const sigmaSettings: Record<string, unknown> = {
         renderEdgeLabels: false,
         allowInvalidContainer: true,
-        defaultEdgeColor: '#ffffff03',
+        defaultEdgeColor: '#00000000',  // edges hidden until hover/select
         defaultNodeColor: '#ffffff',
         labelColor: { color: '#ffffffbb' },
         labelFont: '"JetBrains Mono", monospace',
@@ -285,10 +286,10 @@ export default function Graph({ onSelectRoom }: GraphProps) {
             const source = graph.source(_edge);
             const target = graph.target(_edge);
             if (source === activeNode || target === activeNode) {
-              res['color'] = currentHovered ? '#ffffff40' : '#00ff8840';
-              res['size'] = 1.5;
-            } else if (currentHovered) {
-              res['color'] = '#ffffff02';
+              res['color'] = currentHovered ? '#ffffff35' : '#00ff8835';
+              res['size'] = 1;
+            } else {
+              res['color'] = '#00000000';
             }
           }
           return res;
