@@ -50,6 +50,7 @@ export default function Graph({ onSelectRoom }: GraphProps) {
     } | null = null;
 
     let currentHovered: string | null = null;
+    let selectedNode: string | null = null;
 
     async function initGraph() {
       const { default: GraphClass } = await import('graphology');
@@ -197,8 +198,8 @@ export default function Graph({ onSelectRoom }: GraphProps) {
 
             graph.addEdge(edge.source, edge.target, {
               key: `e-${index}`,
-              color: isInter ? '#ffffff06' : '#ffffff12',
-              size: isInter ? 0.3 : 0.6,
+              color: isInter ? '#ffffff04' : '#ffffff09',
+              size: isInter ? 0.2 : 0.4,
               curvature: 0.15 + Math.random() * 0.1,
               type: 'curved',
             });
@@ -213,7 +214,7 @@ export default function Graph({ onSelectRoom }: GraphProps) {
       const sigmaSettings: Record<string, unknown> = {
         renderEdgeLabels: false,
         allowInvalidContainer: true,
-        defaultEdgeColor: '#ffffff08',
+        defaultEdgeColor: '#ffffff05',
         defaultNodeColor: '#ffffff',
         labelColor: { color: '#ffffffbb' },
         labelFont: '"JetBrains Mono", monospace',
@@ -243,22 +244,34 @@ export default function Graph({ onSelectRoom }: GraphProps) {
             return res;
           }
 
-          if (currentHovered) {
-            const hovComm = graph.hasNode(currentHovered) ? graph.getNodeAttribute(currentHovered, 'community') : -1;
+          // Selected node — persistent highlight with ring
+          if (selectedNode && node === selectedNode) {
+            res['highlighted'] = true;
+            res['size'] = ((data['originalSize'] as number) ?? 12) * 1.6;
+            res['color'] = '#00ff88';
+            res['zIndex'] = 100;
+            res['forceLabel'] = true;
+          }
+
+          // Hovered state
+          const activeNode = currentHovered || selectedNode;
+          if (activeNode && activeNode !== node) {
+            const activeComm = graph.hasNode(activeNode) ? graph.getNodeAttribute(activeNode, 'community') : -1;
             const nodeComm = data['community'];
 
-            if (node === currentHovered) {
+            if (currentHovered && node === currentHovered) {
               res['highlighted'] = true;
               res['size'] = ((data['originalSize'] as number) ?? 12) * 1.5;
               res['zIndex'] = 100;
             } else if (
-              graph.hasEdge(node, currentHovered) ||
-              graph.hasEdge(currentHovered, node)
+              graph.hasEdge(node, activeNode) ||
+              graph.hasEdge(activeNode, node)
             ) {
-              res['size'] = ((data['originalSize'] as number) ?? 12) * 1.15;
-            } else if (nodeComm === hovComm) {
-              // Same cluster — slightly dimmed
-            } else {
+              res['size'] = ((data['originalSize'] as number) ?? 12) * 1.1;
+            } else if (nodeComm === activeComm) {
+              // Same cluster — keep visible
+            } else if (currentHovered) {
+              // Only dim when hovering, not for persistent selection
               res['color'] = '#ffffff08';
               res['label'] = '';
             }
@@ -267,13 +280,14 @@ export default function Graph({ onSelectRoom }: GraphProps) {
         },
         edgeReducer: (_edge: string, data: Record<string, unknown>) => {
           const res = { ...data };
-          if (currentHovered) {
+          const activeNode = currentHovered || selectedNode;
+          if (activeNode) {
             const source = graph.source(_edge);
             const target = graph.target(_edge);
-            if (source === currentHovered || target === currentHovered) {
-              res['color'] = '#ffffff50';
-              res['size'] = 2;
-            } else {
+            if (source === activeNode || target === activeNode) {
+              res['color'] = currentHovered ? '#ffffff40' : '#00ff8840';
+              res['size'] = 1.5;
+            } else if (currentHovered) {
               res['color'] = '#ffffff02';
             }
           }
@@ -289,9 +303,17 @@ export default function Graph({ onSelectRoom }: GraphProps) {
       sigma = new Sigma(graph, containerRef.current, sigmaSettings);
 
       sigma.on('clickNode', (event: { node?: string }) => {
-        if (event.node && !event.node.startsWith('__cluster_label_') && onSelectRoom) {
-          onSelectRoom(event.node);
+        if (event.node && !event.node.startsWith('__cluster_label_')) {
+          selectedNode = event.node;
+          sigma?.refresh();
+          if (onSelectRoom) onSelectRoom(event.node);
         }
+      });
+
+      // Click on background deselects
+      sigma.on('clickStage', () => {
+        selectedNode = null;
+        sigma?.refresh();
       });
 
       sigma.on('enterNode', (event: { node?: string }) => {
