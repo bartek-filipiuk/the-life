@@ -16,7 +16,7 @@
 ## Stage 2: Storage Layer
 
 - [x] **2.1** Create `backend/app/storage/__init__.py` and `backend/app/storage/sqlite_store.py` — async SQLite wrapper: create tables (rooms, stats, config), CRUD for rooms (insert, get_by_id, list_paginated, list_by_day), stats aggregation (total_cost, total_tokens, cost_per_day). **Security: use parameterized queries only, never string formatting for SQL.**
-- [ ] **2.2** Create `backend/app/storage/file_store.py` — save/serve assets (images, music) to `data/rooms/{room_id}/`. **Security: validate room_id is valid UUID before path construction to prevent path traversal. Sanitize filenames.**
+- [x] **2.2** Create `backend/app/storage/file_store.py` — save/serve assets (images, music) to `data/rooms/{room_id}/`. **Security: validate room_id is valid UUID before path construction to prevent path traversal. Sanitize filenames.**
 - [ ] **2.3** Create `backend/app/memory/__init__.py` and `backend/app/memory/chromadb_store.py` — ChromaDB PersistentClient wrapper: 3 collections (rooms, journey_arcs, search_cache). Methods: add_room, query_recent(n), query_similar(text, n), add_arc, add_search_result.
 - [ ] **2.4** Create `backend/app/memory/novelty.py` — embed text via ChromaDB, compare cosine similarity to existing rooms. Return bool (is_novel) + closest match distance.
 - [ ] **2.5** **TEST:** Write `backend/tests/test_sqlite_store.py` — test all CRUD operations, pagination, stats aggregation, parameterized queries safety.
