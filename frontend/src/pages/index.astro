@@ -1,0 +1,43 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import StatsBar from '../components/StatsBar.astro';
+import RoomPanel from '../components/RoomPanel';
+import Terminal from '../components/Terminal';
+import { getStats } from '../lib/api';
+
+const stats = await getStats();
+---
+
+<Layout title="The Life — Autonomous AI Experiment">
+  <!-- Hero Section -->
+  <Hero stats={stats} />
+
+  <!-- Stats Bar -->
+  <StatsBar stats={stats} />
+
+  <!-- Main content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+    <!-- Graph + Selected Room + Behind the Scenes -->
+    <section>
+      <div class="flex items-center gap-2 mb-6">
+        <div class="w-1 h-1 rounded-full bg-info"></div>
+        <h2 class="font-mono text-xs uppercase tracking-[0.3em] text-white/40">
+          Explore the World
+        </h2>
+      </div>
+      <RoomPanel client:load />
+    </section>
+
+    <!-- Live Terminal -->
+    <section>
+      <div class="flex items-center gap-2 mb-6">
+        <div class="w-1 h-1 rounded-full bg-alive"></div>
+        <h2 class="font-mono text-xs uppercase tracking-[0.3em] text-white/40">
+          Live Activity
+        </h2>
+      </div>
+      <Terminal client:load />
+    </section>
+  </div>
+</Layout>

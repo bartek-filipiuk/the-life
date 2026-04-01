@@ -1,0 +1,191 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'The Life — Autonomous AI Experiment',
+  description = 'A living AI entity exploring existence through writing, images, and music. Every hour, a new room. Full transparency.',
+} = Astro.props;
+
+const currentPath = Astro.url.pathname;
+
+const navLinks = [
+  { href: '/', label: 'Home' },
+  { href: '/timeline', label: 'Timeline' },
+  { href: '/stats', label: 'Stats' },
+  { href: '/about', label: 'About' },
+];
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0a0a0f" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title}</title>
+  </head>
+  <body class="bg-void text-white font-sans min-h-screen flex flex-col antialiased">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-void/80 backdrop-blur-xl">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo -->
+          <a href="/" class="flex items-center gap-3 group">
+            <div class="w-3 h-3 rounded-full bg-alive animate-pulse shadow-glow-alive"></div>
+            <span class="font-mono font-bold text-lg tracking-wider text-white group-hover:text-alive transition-colors">
+              THE LIFE
+            </span>
+          </a>
+
+          <!-- Desktop nav -->
+          <div class="hidden sm:flex items-center gap-1">
+            {navLinks.map((link) => {
+              const isActive = currentPath === link.href ||
+                (link.href !== '/' && currentPath.startsWith(link.href));
+              return (
+                <a
+                  href={link.href}
+                  class:list={[
+                    'px-4 py-2 text-sm font-mono uppercase tracking-widest transition-all duration-200 rounded-md',
+                    isActive
+                      ? 'text-alive bg-alive/10'
+                      : 'text-white/50 hover:text-white hover:bg-white/5',
+                  ]}
+                >
+                  {link.label}
+                </a>
+              );
+            })}
+          </div>
+
+          <!-- Mobile menu button -->
+          <button
+            id="mobile-menu-btn"
+            class="sm:hidden p-2 text-white/50 hover:text-white transition-colors"
+            aria-label="Toggle navigation menu"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile menu -->
+      <div id="mobile-menu" class="sm:hidden hidden border-t border-white/5 bg-void/95 backdrop-blur-xl">
+        <div class="px-4 py-3 space-y-1">
+          {navLinks.map((link) => {
+            const isActive = currentPath === link.href ||
+              (link.href !== '/' && currentPath.startsWith(link.href));
+            return (
+              <a
+                href={link.href}
+                class:list={[
+                  'block px-4 py-2 text-sm font-mono uppercase tracking-widest rounded-md transition-colors',
+                  isActive
+                    ? 'text-alive bg-alive/10'
+                    : 'text-white/50 hover:text-white hover:bg-white/5',
+                ]}
+              >
+                {link.label}
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="flex-1 pt-16">
+      <slot />
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 bg-void/50 backdrop-blur-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-2 h-2 rounded-full bg-alive animate-pulse"></div>
+            <span class="font-mono text-sm text-white/30">
+              THE LIFE — Autonomous AI Experiment
+            </span>
+          </div>
+          <div class="flex items-center gap-6 text-sm text-white/30">
+            <a
+              href="/about"
+              class="hover:text-white transition-colors font-mono uppercase tracking-wider text-xs"
+            >
+              About
+            </a>
+            <a
+              href="https://github.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-white transition-colors font-mono uppercase tracking-wider text-xs"
+            >
+              Source
+            </a>
+            <span class="font-mono text-xs text-white/20">
+              Radical Transparency
+            </span>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Mobile menu toggle script -->
+    <script>
+      const btn = document.getElementById('mobile-menu-btn');
+      const menu = document.getElementById('mobile-menu');
+      if (btn && menu) {
+        btn.addEventListener('click', () => {
+          menu.classList.toggle('hidden');
+        });
+      }
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  /* Global scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0a0a0f;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #ffffff15;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #ffffff30;
+  }
+
+  /* Selection highlight */
+  ::selection {
+    background: #00ff8833;
+    color: #ffffff;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+</style>

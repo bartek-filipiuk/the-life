@@ -1,0 +1,73 @@
+---
+import type { Stats } from '../lib/api';
+import { formatCost, formatNumber } from '../lib/api';
+
+interface Props {
+  stats: Stats | null;
+}
+
+const { stats } = Astro.props;
+---
+
+<div class="border-y border-white/5 bg-white/[0.02]">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-px bg-white/5">
+      <!-- Total Cost -->
+      <div class="bg-void px-4 py-4 text-center">
+        <p class="font-mono text-[10px] text-white/30 uppercase tracking-[0.2em]">Total Cost</p>
+        <p class="font-mono text-lg font-bold text-cost mt-1">
+          {stats ? formatCost(stats.total_cost) : '$0.0000'}
+        </p>
+      </div>
+
+      <!-- Total Tokens -->
+      <div class="bg-void px-4 py-4 text-center">
+        <p class="font-mono text-[10px] text-white/30 uppercase tracking-[0.2em]">Tokens Used</p>
+        <p class="font-mono text-lg font-bold text-info mt-1">
+          {stats ? formatNumber(stats.total_tokens) : '0'}
+        </p>
+      </div>
+
+      <!-- Rooms Created -->
+      <div class="bg-void px-4 py-4 text-center">
+        <p class="font-mono text-[10px] text-white/30 uppercase tracking-[0.2em]">Rooms</p>
+        <p class="font-mono text-lg font-bold text-white mt-1">
+          {stats ? formatNumber(stats.total_rooms) : '0'}
+        </p>
+      </div>
+
+      <!-- Avg Cost/Room -->
+      <div class="bg-void px-4 py-4 text-center">
+        <p class="font-mono text-[10px] text-white/30 uppercase tracking-[0.2em]">Avg/Room</p>
+        <p class="font-mono text-lg font-bold text-cost/70 mt-1">
+          {stats ? formatCost(stats.avg_cost_per_room) : '$0.0000'}
+        </p>
+      </div>
+
+      <!-- Model -->
+      <div class="bg-void px-4 py-4 text-center hidden lg:block">
+        <p class="font-mono text-[10px] text-white/30 uppercase tracking-[0.2em]">Model</p>
+        <p class="font-mono text-sm font-medium text-creative mt-1 truncate">
+          {stats?.model ?? 'N/A'}
+        </p>
+      </div>
+
+      <!-- Status -->
+      <div class="bg-void px-4 py-4 text-center hidden lg:block">
+        <p class="font-mono text-[10px] text-white/30 uppercase tracking-[0.2em]">Status</p>
+        <div class="flex items-center justify-center gap-2 mt-1">
+          <div class:list={[
+            'w-2 h-2 rounded-full',
+            stats?.status === 'alive' ? 'bg-alive animate-pulse' : 'bg-cost',
+          ]}></div>
+          <span class:list={[
+            'font-mono text-sm font-medium uppercase',
+            stats?.status === 'alive' ? 'text-alive' : 'text-cost',
+          ]}>
+            {stats?.status ?? 'Unknown'}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

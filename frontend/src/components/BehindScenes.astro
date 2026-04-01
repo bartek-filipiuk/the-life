@@ -1,0 +1,177 @@
+---
+import type { Room } from '../lib/api';
+import { formatCost, formatDuration, formatNumber } from '../lib/api';
+
+interface Props {
+  room: Room | null;
+}
+
+const { room } = Astro.props;
+---
+
+{room ? (
+  <div class="rounded-lg border border-white/5 bg-white/[0.02] overflow-hidden">
+    {/* Header */}
+    <div class="px-6 py-4 border-b border-white/5 bg-white/[0.02]">
+      <div class="flex items-center gap-2">
+        <div class="w-1.5 h-1.5 rounded-full bg-alive"></div>
+        <h3 class="font-mono text-xs uppercase tracking-[0.3em] text-white/50">
+          Behind the Scenes
+        </h3>
+      </div>
+    </div>
+
+    <div class="p-6 space-y-6">
+      {/* Intention & Reasoning */}
+      <div class="space-y-3">
+        <h4 class="font-mono text-[10px] uppercase tracking-[0.2em] text-alive/70">Intention</h4>
+        <p class="text-sm text-white/50 leading-relaxed">{room.intention}</p>
+      </div>
+
+      {room.reasoning && (
+        <div class="space-y-3">
+          <h4 class="font-mono text-[10px] uppercase tracking-[0.2em] text-info/70">Reasoning</h4>
+          <p class="text-sm text-white/50 leading-relaxed">{room.reasoning}</p>
+        </div>
+      )}
+
+      {/* Web Searches */}
+      {room.search_queries.length > 0 && (
+        <div class="space-y-3">
+          <h4 class="font-mono text-[10px] uppercase tracking-[0.2em] text-creative/70">
+            Web Searches ({room.search_queries.length})
+          </h4>
+          <div class="space-y-2">
+            {room.search_queries.map((query) => (
+              <div class="flex items-start gap-2 text-sm">
+                <span class="text-white/20 mt-0.5 flex-shrink-0">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </span>
+                <span class="text-white/40 font-mono text-xs">{query}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Search Results Summary */}
+      {room.search_results.length > 0 && (
+        <div class="space-y-3">
+          <h4 class="font-mono text-[10px] uppercase tracking-[0.2em] text-info/70">
+            Sources ({room.search_results.length})
+          </h4>
+          <div class="space-y-2">
+            {room.search_results.slice(0, 5).map((result) => (
+              <a
+                href={result.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block p-2 rounded bg-white/[0.02] hover:bg-white/[0.05] transition-colors group"
+              >
+                <p class="text-xs text-white/50 group-hover:text-white/70 truncate">
+                  {result.title}
+                </p>
+                <p class="text-[10px] text-white/20 font-mono truncate mt-0.5">
+                  {result.url}
+                </p>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Cost Breakdown */}
+      <div class="space-y-3">
+        <h4 class="font-mono text-[10px] uppercase tracking-[0.2em] text-cost/70">Cost Breakdown</h4>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="p-3 rounded bg-white/[0.02] text-center">
+            <p class="font-mono text-[10px] text-white/30">LLM</p>
+            <p class="font-mono text-sm text-cost font-medium">{formatCost(room.llm_cost)}</p>
+          </div>
+          <div class="p-3 rounded bg-white/[0.02] text-center">
+            <p class="font-mono text-[10px] text-white/30">Image</p>
+            <p class="font-mono text-sm text-cost font-medium">{formatCost(room.image_cost)}</p>
+          </div>
+          <div class="p-3 rounded bg-white/[0.02] text-center">
+            <p class="font-mono text-[10px] text-white/30">Music</p>
+            <p class="font-mono text-sm text-cost font-medium">{formatCost(room.music_cost)}</p>
+          </div>
+          <div class="p-3 rounded bg-white/[0.02] text-center">
+            <p class="font-mono text-[10px] text-white/30">Search</p>
+            <p class="font-mono text-sm text-cost font-medium">{formatCost(room.search_cost)}</p>
+          </div>
+        </div>
+        <div class="flex items-center justify-between p-3 rounded bg-cost/5 border border-cost/10">
+          <span class="font-mono text-xs text-white/40">Total Cost</span>
+          <span class="font-mono text-sm font-bold text-cost">{formatCost(room.total_cost)}</span>
+        </div>
+      </div>
+
+      {/* Metrics */}
+      <div class="grid grid-cols-3 gap-2">
+        <div class="p-3 rounded bg-white/[0.02] text-center">
+          <p class="font-mono text-[10px] text-white/30">Tokens</p>
+          <p class="font-mono text-sm text-info font-medium">{formatNumber(room.llm_tokens)}</p>
+        </div>
+        <div class="p-3 rounded bg-white/[0.02] text-center">
+          <p class="font-mono text-[10px] text-white/30">Duration</p>
+          <p class="font-mono text-sm text-white/60 font-medium">{formatDuration(room.duration_ms)}</p>
+        </div>
+        <div class="p-3 rounded bg-white/[0.02] text-center">
+          <p class="font-mono text-[10px] text-white/30">Model</p>
+          <p class="font-mono text-[10px] text-creative font-medium truncate" title={room.model}>
+            {room.model.split('/').pop()}
+          </p>
+        </div>
+      </div>
+
+      {/* Connections */}
+      {room.connections.length > 0 && (
+        <div class="space-y-3">
+          <h4 class="font-mono text-[10px] uppercase tracking-[0.2em] text-white/30">
+            Connections ({room.connections.length})
+          </h4>
+          <div class="flex flex-wrap gap-1.5">
+            {room.connections.map((connId) => (
+              <a
+                href={`/room/${connId}`}
+                class="font-mono text-[10px] text-info/50 hover:text-info px-2 py-1 rounded bg-info/5 hover:bg-info/10 transition-colors truncate max-w-[120px]"
+                title={connId}
+              >
+                {connId.slice(0, 8)}...
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Image Prompt */}
+      {room.image_prompt && (
+        <div class="space-y-3">
+          <h4 class="font-mono text-[10px] uppercase tracking-[0.2em] text-creative/70">Image Prompt</h4>
+          <p class="text-xs text-white/30 font-mono leading-relaxed bg-white/[0.02] p-3 rounded">
+            {room.image_prompt}
+          </p>
+        </div>
+      )}
+
+      {/* Music Prompt */}
+      {room.music_prompt && (
+        <div class="space-y-3">
+          <h4 class="font-mono text-[10px] uppercase tracking-[0.2em] text-alive/70">Music Prompt</h4>
+          <p class="text-xs text-white/30 font-mono leading-relaxed bg-white/[0.02] p-3 rounded">
+            {room.music_prompt}
+          </p>
+        </div>
+      )}
+    </div>
+  </div>
+) : (
+  <div class="rounded-lg border border-dashed border-white/10 bg-white/[0.01] p-8 text-center">
+    <p class="font-mono text-sm text-white/20">
+      Select a room to see behind the scenes
+    </p>
+  </div>
+)}

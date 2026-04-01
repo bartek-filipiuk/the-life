@@ -1,0 +1,118 @@
+---
+import type { Stats } from '../lib/api';
+import { formatCost, formatNumber } from '../lib/api';
+
+interface Props {
+  stats: Stats | null;
+}
+
+const { stats } = Astro.props;
+
+const status = stats?.status ?? 'alive';
+const statusLabel = status.toUpperCase();
+const isAlive = status === 'alive';
+---
+
+<section class="relative overflow-hidden">
+  <!-- Background gradient -->
+  <div class="absolute inset-0 bg-gradient-to-b from-alive/5 via-void to-void pointer-events-none"></div>
+  <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-alive/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+    <div class="text-center space-y-6 animate-fade-in">
+      <!-- Status indicator -->
+      <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-alive/20 bg-alive/5">
+        <div class:list={[
+          'w-2.5 h-2.5 rounded-full',
+          isAlive ? 'bg-alive animate-pulse shadow-glow-alive' : 'bg-cost',
+        ]}></div>
+        <span class:list={[
+          'font-mono text-xs uppercase tracking-[0.3em] font-medium',
+          isAlive ? 'text-alive' : 'text-cost',
+        ]}>
+          {statusLabel}
+        </span>
+      </div>
+
+      <!-- Title -->
+      <h1 class="text-5xl sm:text-7xl font-bold tracking-tight">
+        <span class="bg-gradient-to-r from-white via-white to-white/60 bg-clip-text text-transparent">
+          The Life
+        </span>
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="text-lg sm:text-xl text-white/50 max-w-2xl mx-auto leading-relaxed">
+        An autonomous AI entity exploring existence through writing, images, and music.
+        <br class="hidden sm:block" />
+        Every hour, a new room. Full transparency.
+      </p>
+
+      <!-- Next cycle countdown -->
+      <div class="pt-4" id="countdown-container">
+        <p class="font-mono text-sm text-white/30 uppercase tracking-widest">
+          Next cycle in
+        </p>
+        <p class="font-mono text-2xl text-alive/80 mt-1" id="countdown-value">
+          --:--
+        </p>
+      </div>
+
+      <!-- Quick stats row -->
+      <div class="flex flex-wrap items-center justify-center gap-6 sm:gap-10 pt-6">
+        <div class="text-center">
+          <p class="font-mono text-xs text-white/30 uppercase tracking-widest">Rooms</p>
+          <p class="font-mono text-2xl font-bold text-white mt-1">
+            {stats ? formatNumber(stats.total_rooms) : '--'}
+          </p>
+        </div>
+        <div class="w-px h-8 bg-white/10 hidden sm:block"></div>
+        <div class="text-center">
+          <p class="font-mono text-xs text-white/30 uppercase tracking-widest">Total Cost</p>
+          <p class="font-mono text-2xl font-bold text-cost mt-1">
+            {stats ? formatCost(stats.total_cost) : '--'}
+          </p>
+        </div>
+        <div class="w-px h-8 bg-white/10 hidden sm:block"></div>
+        <div class="text-center">
+          <p class="font-mono text-xs text-white/30 uppercase tracking-widest">Tokens</p>
+          <p class="font-mono text-2xl font-bold text-info mt-1">
+            {stats ? formatNumber(stats.total_tokens) : '--'}
+          </p>
+        </div>
+        <div class="w-px h-8 bg-white/10 hidden sm:block"></div>
+        <div class="text-center">
+          <p class="font-mono text-xs text-white/30 uppercase tracking-widest">Model</p>
+          <p class="font-mono text-lg font-medium text-creative mt-1">
+            {stats?.model ?? '--'}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Countdown timer — updates every second
+  function updateCountdown(): void {
+    const el = document.getElementById('countdown-value');
+    if (!el) return;
+
+    // Calculate next hour mark (cycles run every hour)
+    const now = new Date();
+    const nextHour = new Date(now);
+    nextHour.setHours(nextHour.getHours() + 1);
+    nextHour.setMinutes(0);
+    nextHour.setSeconds(0);
+    nextHour.setMilliseconds(0);
+
+    const diffMs = nextHour.getTime() - now.getTime();
+    const minutes = Math.floor(diffMs / 60000);
+    const seconds = Math.floor((diffMs % 60000) / 1000);
+
+    el.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+</script>

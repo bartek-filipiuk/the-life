@@ -54,23 +54,23 @@
 
 ## Stage 6: Frontend (Astro + Tailwind + Sigma.js)
 
-- [ ] **6.1** Initialize Astro project in `frontend/` with React and Tailwind integrations. Configure dark theme in `tailwind.config.mjs` with custom colors (#0a0a0f, #00ff88, #ff6b6b, #6b9fff, #c084fc).
-- [ ] **6.2** Create `frontend/src/layouts/Layout.astro` — base dark layout with meta tags, navigation (Home, Timeline, Stats, About), footer.
-- [ ] **6.3** Create `frontend/src/lib/api.ts` — typed API client for backend (fetch wrapper with error handling, base URL from env).
-- [ ] **6.4** Create `frontend/src/components/Hero.astro` + `StatsBar.astro` — hero section with experiment title, status indicator (ALIVE pulse animation), next cycle countdown, live stats (total cost, tokens, rooms, model).
-- [ ] **6.5** Create `frontend/src/components/Graph.tsx` — Sigma.js + Graphology React island. Fetch /graph, render force-directed layout. Nodes colored by content_type, sized by connection count, glow on latest. Click → select room. Zoom/pan controls.
-- [ ] **6.6** Create `frontend/src/components/RoomCard.astro` + `BehindScenes.astro` — room preview (title, excerpt, image thumb, tags) + transparency panel (prompt, searches, costs, connections).
-- [ ] **6.7** Create `frontend/src/components/Terminal.tsx` — React island consuming SSE /current-cycle endpoint. Styled as terminal with timestamps and colored log levels.
-- [ ] **6.8** Create `frontend/src/pages/index.astro` — landing page assembling: Hero, StatsBar, Graph, selected RoomCard + BehindScenes, Terminal.
-- [ ] **6.9** Create `frontend/src/pages/room/[id].astro` — full room detail: complete text, full image, audio player, all metadata, transparency, connected rooms navigation.
-- [ ] **6.10** Create `frontend/src/pages/timeline.astro` — day-by-day scrollable timeline with room thumbnails. Filter by content_type/mood/tags.
-- [ ] **6.11** Create `frontend/src/pages/stats.astro` — dashboard: cost chart over time, tokens chart, rooms/day, top tags, model breakdown, avg cost/room.
-- [ ] **6.12** Create `frontend/src/pages/about.astro` — experiment description, rules, current config, source code link.
+- [x] **6.1** Initialize Astro project in `frontend/` with React and Tailwind integrations. Configure dark theme in `tailwind.config.mjs` with custom colors (#0a0a0f, #00ff88, #ff6b6b, #6b9fff, #c084fc).
+- [x] **6.2** Create `frontend/src/layouts/Layout.astro` — base dark layout with meta tags, navigation (Home, Timeline, Stats, About), footer.
+- [x] **6.3** Create `frontend/src/lib/api.ts` — typed API client for backend (fetch wrapper with error handling, base URL from env).
+- [x] **6.4** Create `frontend/src/components/Hero.astro` + `StatsBar.astro` — hero section with experiment title, status indicator (ALIVE pulse animation), next cycle countdown, live stats (total cost, tokens, rooms, model).
+- [x] **6.5** Create `frontend/src/components/Graph.tsx` — Sigma.js + Graphology React island. Fetch /graph, render force-directed layout. Nodes colored by content_type, sized by connection count, glow on latest. Click → select room. Zoom/pan controls.
+- [x] **6.6** Create `frontend/src/components/RoomCard.astro` + `BehindScenes.astro` — room preview (title, excerpt, image thumb, tags) + transparency panel (prompt, searches, costs, connections).
+- [x] **6.7** Create `frontend/src/components/Terminal.tsx` — React island consuming SSE /current-cycle endpoint. Styled as terminal with timestamps and colored log levels.
+- [x] **6.8** Create `frontend/src/pages/index.astro` — landing page assembling: Hero, StatsBar, Graph, selected RoomCard + BehindScenes, Terminal.
+- [x] **6.9** Create `frontend/src/pages/room/[id].astro` — full room detail: complete text, full image, audio player, all metadata, transparency, connected rooms navigation.
+- [x] **6.10** Create `frontend/src/pages/timeline.astro` — day-by-day scrollable timeline with room thumbnails. Filter by content_type/mood/tags.
+- [x] **6.11** Create `frontend/src/pages/stats.astro` — dashboard: cost chart over time, tokens chart, rooms/day, top tags, model breakdown, avg cost/room.
+- [x] **6.12** Create `frontend/src/pages/about.astro` — experiment description, rules, current config, source code link.
 
 ## Stage 7: Docker & Deployment
 
 - [x] **7.1** Create `backend/Dockerfile` — Python 3.12, install deps, copy app, run uvicorn. **Security: non-root user, no dev deps in production, multi-stage build.**
-- [ ] **7.2** Create `frontend/Dockerfile` — Node build stage → nginx serve stage. **Security: non-root nginx, minimal base image.**
+- [x] **7.2** Create `frontend/Dockerfile` — Node build stage → nginx serve stage. **Security: non-root nginx, minimal base image.**
 - [x] **7.3** Create `docker-compose.yml` — backend (port 8000) + frontend (port 3000) + shared volume for /data. Environment variables from .env file.
 - [ ] **7.4** **INTEGRATION TEST:** docker-compose up, POST /trigger, verify room appears in GET /rooms and GET /graph, verify frontend renders at localhost:3000.
 

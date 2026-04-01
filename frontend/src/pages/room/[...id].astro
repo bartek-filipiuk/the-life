@@ -1,0 +1,44 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import RoomDetail from '../../components/RoomDetail';
+import { getRooms } from '../../lib/api';
+
+export async function getStaticPaths() {
+  // At build time, fetch all known room IDs from the API.
+  // The page content is entirely client-rendered (React island),
+  // so even without pre-built pages, the React component handles fetching.
+  // We always include a "placeholder" path so the template is generated
+  // at least once, enabling SPA-style navigation via the catch-all route.
+  const paths = [
+    {
+      params: { id: 'placeholder' },
+      props: { roomId: 'placeholder', roomTitle: 'Room' },
+    },
+  ];
+
+  try {
+    const rooms = await getRooms(1, 100);
+    for (const room of rooms) {
+      paths.push({
+        params: { id: room.id },
+        props: { roomId: room.id, roomTitle: room.title },
+      });
+    }
+  } catch {
+    // API unavailable at build time — just use placeholder
+  }
+
+  return paths;
+}
+
+interface Props {
+  roomId: string;
+  roomTitle: string;
+}
+
+const { roomId, roomTitle } = Astro.props;
+---
+
+<Layout title={`${roomTitle} — The Life`}>
+  <RoomDetail client:load />
+</Layout>

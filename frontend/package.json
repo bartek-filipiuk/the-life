@@ -1,0 +1,29 @@
+{
+  "name": "the-life-frontend",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^5.18.1",
+    "@astrojs/react": "^4.4.2",
+    "@astrojs/tailwind": "^6.0.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "sigma": "^3.0.2",
+    "graphology": "^0.26.0",
+    "graphology-layout-forceatlas2": "^0.10.1",
+    "graphology-types": "^0.24.7",
+    "@sigma/node-image": "^3.0.0",
+    "tailwindcss": "^3.4.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0"
+  }
+}
