@@ -26,14 +26,14 @@
 
 ## Stage 3: External API Clients (Tools)
 
-- [ ] **3.1** Create `backend/app/llm_client.py` — OpenRouter wrapper using openai SDK (base_url="https://openrouter.ai/api/v1"). Methods: decision_call(messages, tools) → structured JSON, creation_call(messages) → room content. Track tokens and cost from response. **Security: validate API key exists before call, handle rate limits with exponential backoff, timeout after 60s.**
-- [ ] **3.2** Create `backend/app/tools/__init__.py` and `backend/app/tools/web_search.py` — Brave Search API wrapper. Input: query string. Output: list of {title, url, snippet}. Max 5 results. **Security: sanitize query input, validate response structure, timeout 10s.**
-- [ ] **3.3** Create `backend/app/tools/image_gen.py` — Replicate Flux wrapper. Input: prompt string. Output: image URL or local path after download. **Security: validate prompt length < 1000 chars, download to controlled directory only, verify content-type is image.**
-- [ ] **3.4** Create `backend/app/tools/music_gen.py` — Replicate MusicGen wrapper. Input: prompt + duration. Output: audio URL or local path. **Security: same as image_gen — validate inputs, controlled download dir, verify content-type.**
-- [ ] **3.5** **TEST:** Write `backend/tests/test_llm_client.py` — mock OpenRouter responses, test structured output parsing, cost tracking, error handling (timeout, rate limit, invalid response).
-- [ ] **3.6** **TEST:** Write `backend/tests/test_web_search.py` — mock Brave API, test result parsing, empty results, timeout handling.
-- [ ] **3.7** **TEST:** Write `backend/tests/test_image_gen.py` — mock Replicate API, test image download, invalid prompt rejection, content-type validation.
-- [ ] **3.8** **TEST:** Write `backend/tests/test_music_gen.py` — mock Replicate API, test audio download, duration validation, error handling.
+- [x] **3.1** Create `backend/app/llm_client.py` — OpenRouter wrapper using openai SDK (base_url="https://openrouter.ai/api/v1"). Methods: decision_call(messages, tools) → structured JSON, creation_call(messages) → room content. Track tokens and cost from response. **Security: validate API key exists before call, handle rate limits with exponential backoff, timeout after 60s.**
+- [x] **3.2** Create `backend/app/tools/__init__.py` and `backend/app/tools/web_search.py` — Brave Search API wrapper. Input: query string. Output: list of {title, url, snippet}. Max 5 results. **Security: sanitize query input, validate response structure, timeout 10s.**
+- [x] **3.3** Create `backend/app/tools/image_gen.py` — Replicate Flux wrapper. Input: prompt string. Output: image URL or local path after download. **Security: validate prompt length < 1000 chars, download to controlled directory only, verify content-type is image.**
+- [x] **3.4** Create `backend/app/tools/music_gen.py` — Replicate MusicGen wrapper. Input: prompt + duration. Output: audio URL or local path. **Security: same as image_gen — validate inputs, controlled download dir, verify content-type.**
+- [x] **3.5** **TEST:** Write `backend/tests/test_llm_client.py` — mock OpenRouter responses, test structured output parsing, cost tracking, error handling (timeout, rate limit, invalid response).
+- [x] **3.6** **TEST:** Write `backend/tests/test_web_search.py` — mock Brave API, test result parsing, empty results, timeout handling.
+- [x] **3.7** **TEST:** Write `backend/tests/test_image_gen.py` — mock Replicate API, test image download, invalid prompt rejection, content-type validation.
+- [x] **3.8** **TEST:** Write `backend/tests/test_music_gen.py` — mock Replicate API, test audio download, duration validation, error handling.
 
 ## Stage 4: AI Cycle Engine
 
