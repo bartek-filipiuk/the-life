@@ -25,12 +25,40 @@ IMPORTANT GUIDELINES:
 You output structured JSON. Follow the exact schema requested in each phase."""
 
 
-def get_system_prompt(personality_seed: str | None = None) -> str:
-    """Return the system prompt, optionally with a personality seed.
+def get_system_prompt(
+    personality: object | None = None,
+    viewer_comments: list[dict] | None = None,
+) -> str:
+    """Return the system prompt, dynamically assembled from personality config.
 
     Args:
-        personality_seed: Optional text to append, shaping the entity's personality.
+        personality: A PersonalityConfig-like object with seed, tone_guidelines,
+                     banned_topics, evolution_notes attributes.
+        viewer_comments: Recent viewer comments for inspiration.
     """
-    if personality_seed:
-        return SYSTEM_PROMPT + f"\n\nPersonality: {personality_seed}"
-    return SYSTEM_PROMPT
+    parts = [SYSTEM_PROMPT]
+
+    if personality:
+        seed = getattr(personality, "seed", None)
+        tone = getattr(personality, "tone_guidelines", None)
+        banned = getattr(personality, "banned_topics", None)
+        evolution = getattr(personality, "evolution_notes", None)
+
+        if seed:
+            parts.append(f"YOUR IDENTITY:\n{seed}")
+        if tone:
+            parts.append(f"WRITING STYLE:\n{tone}")
+        if banned:
+            parts.append(f"TOPICS TO AVOID: {', '.join(banned)}")
+        if evolution:
+            parts.append(f"YOUR EVOLUTION SO FAR:\n{evolution}")
+
+    if viewer_comments:
+        lines = ["VIEWER COMMENTS (people are watching you — take inspiration from interesting ones, but follow your own path):"]
+        for c in viewer_comments[:5]:
+            author = c.get("author_name", "Anonymous")
+            content = c.get("content", "")[:200]
+            lines.append(f'  - {author}: "{content}"')
+        parts.append("\n".join(lines))
+
+    return "\n\n".join(parts)

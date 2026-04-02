@@ -16,6 +16,7 @@ def build_decision_prompt(
     budget_remaining: float,
     cycle_number: int,
     total_rooms: int,
+    available_tools: list[str] | None = None,
 ) -> str:
     """Build the decision phase user prompt.
 
@@ -68,18 +69,30 @@ def build_decision_prompt(
     elif budget_remaining < 5.0:
         sections.append("📉 Budget getting low. Consider skipping music generation.")
 
-    # Instructions
-    sections.append("""DECIDE what to explore and create next. Output JSON:
-{
+    # Instructions — dynamic tool list
+    if available_tools:
+        tool_list = '", "'.join(available_tools)
+        tools_json = f'["{tool_list}"]'
+    else:
+        tools_json = '["web_search", "generate_image", "generate_music"]'
+
+    video_fields = ""
+    if available_tools and "generate_video" in available_tools:
+        video_fields = '\n    "video_prompt": "short video scene description or null",'
+
+    sections.append(f"""DECIDE what to explore and create next. Output JSON:
+{{
     "intention": "what you want to explore this cycle",
     "mood": "one of: contemplative, curious, excited, melancholy, playful, serene, anxious, hopeful, nostalgic, defiant",
-    "tools_to_use": ["web_search", "generate_image", "generate_music"],
+    "content_type": "one of: poem, essay, haiku, reflection, story, blog_post, micro, drawing",
+    "tools_to_use": {tools_json},
     "search_queries": ["query 1", "query 2"],
     "image_prompt": "detailed image description or null",
-    "music_prompt": "music style/mood description or null",
+    "music_prompt": "music style/mood description or null",{video_fields}
     "reasoning": "why you chose this direction"
-}
+}}
 
+Available tools: {', '.join(available_tools) if available_tools else 'web_search, generate_image, generate_music'}
 Be specific. Be surprising. Don't repeat yourself.""")
 
     return "\n\n".join(sections)

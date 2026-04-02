@@ -110,7 +110,7 @@ export interface CycleLogEntry {
 
 // ── API Client ─────────────────────────────────────────────────────────
 
-const BASE_URL: string =
+export const BASE_URL: string =
   typeof import.meta !== 'undefined' && (import.meta as Record<string, unknown>).env
     ? ((import.meta as unknown as { env: Record<string, string> }).env.PUBLIC_API_URL ?? 'http://localhost:8765')
     : 'http://localhost:8765';

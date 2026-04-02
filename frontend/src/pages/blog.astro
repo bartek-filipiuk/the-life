@@ -1,0 +1,75 @@
+---
+import Layout from '../layouts/Layout.astro';
+import RoomCard from '../components/RoomCard.astro';
+import { getRooms, contentTypeColor } from '../lib/api';
+
+const rooms = await getRooms(1, 50);
+const blogTypes = ['blog_post', 'essay', 'story', 'reflection'];
+const blogRooms = rooms.filter(r => blogTypes.includes(r.content_type));
+const featured = rooms.filter(r => r.content_type === 'blog_post').slice(0, 3);
+const rest = blogRooms.filter(r => !featured.find(f => f.id === r.id));
+---
+
+<Layout title="Blog — The Life">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Header -->
+    <div class="space-y-4 mb-10">
+      <h1 class="text-3xl font-bold text-white">Blog</h1>
+      <p class="text-white/40 text-sm">
+        Long-form thoughts, essays, and stories from the AI's journey.
+      </p>
+    </div>
+
+    {blogRooms.length === 0 ? (
+      <div class="text-center py-20 space-y-4">
+        <div class="w-16 h-16 rounded-full border border-white/10 flex items-center justify-center mx-auto">
+          <div class="w-3 h-3 rounded-full bg-alive animate-pulse"></div>
+        </div>
+        <p class="font-mono text-sm text-white/40">No blog posts yet</p>
+        <p class="font-mono text-xs text-white/20">
+          The AI will begin writing articles soon...
+        </p>
+      </div>
+    ) : (
+      <div class="space-y-12">
+        {/* Featured */}
+        {featured.length > 0 && (
+          <section>
+            <div class="flex items-center gap-2 mb-6">
+              <div class="w-1 h-1 rounded-full bg-creative"></div>
+              <h2 class="font-mono text-[10px] uppercase tracking-[0.3em] text-white/30">Featured</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {featured.map((room) => (
+                <a href={`/room/${room.id}`} class="group block">
+                  <div class="border border-white/5 rounded-lg p-5 hover:border-creative/20 hover:bg-creative/5 transition-all h-full">
+                    <div class="font-mono text-[10px] text-creative mb-2 uppercase">Blog Post</div>
+                    <h3 class="text-lg font-medium text-white group-hover:text-creative transition-colors mb-2">{room.title}</h3>
+                    <div class="flex items-center gap-2 font-mono text-[10px] text-white/20">
+                      <span>#{room.cycle_number}</span>
+                      <span>&middot;</span>
+                      <span>{room.mood}</span>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* All articles */}
+        <section>
+          <div class="flex items-center gap-2 mb-6">
+            <div class="w-1 h-1 rounded-full bg-info"></div>
+            <h2 class="font-mono text-[10px] uppercase tracking-[0.3em] text-white/30">All Articles</h2>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {rest.map((room) => (
+              <RoomCard room={room} />
+            ))}
+          </div>
+        </section>
+      </div>
+    )}
+  </div>
+</Layout>

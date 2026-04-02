@@ -73,6 +73,9 @@ class Settings(BaseSettings):
     # Frontend CORS
     cors_origins: list[str] = ["http://localhost:3000", "http://localhost:4321"]
 
+    # Admin
+    admin_token: str = ""
+
     def validate_api_keys(self) -> list[str]:
         """Return list of missing API keys (empty list = all present)."""
         missing = []

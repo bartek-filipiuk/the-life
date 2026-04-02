@@ -14,12 +14,15 @@ from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app.api.admin_routes import router as admin_router
 from app.api.routes import router
 from app.config import load_settings
 from app.cycle_engine import CycleEngine
 from app.llm_client import LLMClient
 from app.memory.chromadb_store import ChromaDBStore
 from app.storage.sqlite_store import SQLiteStore
+from app.moderation import Moderator
+from app.tools.registry import ToolRegistry
 from app.tools.search_factory import create_search_provider
 
 logger = logging.getLogger(__name__)
@@ -43,6 +46,16 @@ async def lifespan(app: FastAPI):
     chromadb.connect()
     app.state.chromadb = chromadb
 
+    # Init tool registry
+    registry = ToolRegistry(sqlite)
+    await registry.load()
+    app.state.tool_registry = registry
+
+    # Init moderator
+    moderator = Moderator(sqlite)
+    await moderator.load_config()
+    app.state.moderator = moderator
+
     # Init cycle engine (only if API keys available)
     missing = settings.validate_api_keys()
     if not missing:
@@ -62,6 +75,7 @@ async def lifespan(app: FastAPI):
             sqlite=sqlite,
             data_dir=data_dir,
             search=search,
+            tool_registry=registry,
         )
         app.state.cycle_engine = engine
 
@@ -115,7 +129,7 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=settings.cors_origins,
         allow_credentials=False,
-        allow_methods=["GET", "POST"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
         allow_headers=["*"],
     )
 
@@ -130,6 +144,7 @@ def create_app() -> FastAPI:
 
     # Routes
     app.include_router(router)
+    app.include_router(admin_router)
 
     return app
 

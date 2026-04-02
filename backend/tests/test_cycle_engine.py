@@ -87,6 +87,8 @@ def mock_sqlite():
     store.count_rooms = AsyncMock(return_value=0)
     store.get_daily_cost = AsyncMock(return_value=0.0)
     store.insert_room = AsyncMock()
+    store.get_config = AsyncMock(return_value=None)
+    store.get_recent_approved_comments = AsyncMock(return_value=[])
     return store
 
 

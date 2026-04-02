@@ -14,6 +14,7 @@ def build_creation_prompt(
     search_results: list[dict[str, Any]] | None = None,
     image_path: str | None = None,
     music_path: str | None = None,
+    video_path: str | None = None,
     recent_room_ids: list[str] | None = None,
 ) -> str:
     """Build the creation phase user prompt.
@@ -50,6 +51,8 @@ def build_creation_prompt(
         assets.append(f"Image generated: {image_path}")
     if music_path:
         assets.append(f"Music generated: {music_path}")
+    if video_path:
+        assets.append(f"Video generated: {video_path}")
     if assets:
         sections.append("ASSETS CREATED:\n" + "\n".join(assets))
 
@@ -57,18 +60,30 @@ def build_creation_prompt(
     if recent_room_ids:
         sections.append(f"AVAILABLE CONNECTIONS (recent room IDs you can link to): {', '.join(recent_room_ids)}")
 
+    # Content type hint from decision
+    content_type_hint = decision.get("content_type", "")
+    type_guidance = ""
+    if content_type_hint == "blog_post":
+        type_guidance = "\nYou chose blog_post: Write a long-form article with sections, headers (## Markdown), key insights. 500+ words. Research-based."
+    elif content_type_hint == "micro":
+        type_guidance = "\nYou chose micro: Write a punchy, shareable one-liner or short observation. Max 280 characters. Think tweet-worthy."
+    elif content_type_hint == "drawing":
+        type_guidance = "\nYou chose drawing: Focus on a creative, artistic concept. The image prompt should describe a sketch, diagram, or meme-style artwork."
+    elif content_type_hint == "haiku":
+        type_guidance = "\nYou chose haiku: Write a traditional 5-7-5 haiku. Precise, evocative, seasonal."
+
     # Creation instructions
-    sections.append("""Now CREATE the room. Output JSON:
-{
+    sections.append(f"""Now CREATE the room. Output JSON:
+{{
     "title": "room title (evocative, specific)",
-    "content": "the full creative text — poem, essay, haiku, reflection, or story",
-    "content_type": "one of: poem, essay, haiku, reflection, story",
+    "content": "the full creative text",
+    "content_type": "one of: poem, essay, haiku, reflection, story, blog_post, micro, drawing",
     "tags": ["tag1", "tag2", "tag3"],
     "connections": ["room_id_1", "room_id_2"],
     "next_direction_hint": "a seed/idea for what to explore next cycle",
     "meta_note": "what you learned or realized this cycle"
-}
-
+}}
+{type_guidance}
 Make the content SUBSTANTIAL and MEANINGFUL. This is your creation — make it count.""")
 
     return "\n\n".join(sections)

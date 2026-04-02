@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     tailwind(),
   ],
-  output: 'static',
+  output: 'server',
   vite: {
     ssr: {
       noExternal: ['sigma', 'graphology', 'graphology-layout-forceatlas2'],
